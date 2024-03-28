@@ -14,7 +14,7 @@ exports.signup = async (req, res, next) => {
       .status(422)
       .json({ message: "Validation failded.", error: errors.array()[0].msg });
   }
-  const phoneNumber = req.body.phoneNumber;
+  const email = req.body.email;
   const password = req.body.password;
   const name = req.body.name;
   try {
@@ -24,7 +24,7 @@ exports.signup = async (req, res, next) => {
     friends.push(f1);
     const conversations = [];
     const user = new User({
-      phoneNumber: phoneNumber,
+      email: email,
       password: hashedPwd,
       name: name,
       friends: friends,
@@ -46,14 +46,14 @@ exports.login = async (req, res, next) => {
       .status(422)
       .json({ message: "Validation failded.", error: errors.array()[0].msg });
   }
-  const phoneNumber = req.body.phoneNumber;
+  const email = req.body.email;
   const password = req.body.password;
   try {
-    const user = await User.findOne({ phoneNumber: phoneNumber });
+    const user = await User.findOne({ email: email });
     if (!user) {
       return res
         .status(404)
-        .json({ message: "A user with this phoneNumber could not be found." });
+        .json({ message: "A user with this email could not be found." });
     }
     const isEqual = await bcrypt.compare(password, user.password);
     if (!isEqual) {
@@ -61,7 +61,7 @@ exports.login = async (req, res, next) => {
     }
     const token = jwt.sign(
       {
-        phoneNumber: user.phoneNumber,
+        email: user.email,
         userId: user._id.toString(),
       },
       "secret",

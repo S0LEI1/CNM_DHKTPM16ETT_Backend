@@ -10,14 +10,13 @@ const authController = require("../controllers/auth");
 router.put(
   "/signup",
   [
-    body("phoneNumber")
-      .isMobilePhone()
-      .isLength({ min: 10, max: 10 })
-      .withMessage("Phone number must be 10 digits.")
+    body("email")
+      .isEmail()
+      .withMessage("Email invalid")
       .custom((value, { req }) => {
-        return User.findOne({ phoneNumber: value }).then((userDoc) => {
+        return User.findOne({ email: value }).then((userDoc) => {
           if (userDoc) {
-            return Promise.reject("Phone number already exists.");
+            return Promise.reject("Email already exists.");
           }
         });
       }),
@@ -33,9 +32,8 @@ router.put(
 router.post(
   "/login",
   [
-    body("phoneNumber")
-      .isMobilePhone()
-      .isLength({ min: 10, max: 10 })
+    body("email")
+      .isEmail()
       .withMessage("Phone number must be 10 digits."),
     body("password")
       .trim()
