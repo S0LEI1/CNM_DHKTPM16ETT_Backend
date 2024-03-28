@@ -46,14 +46,14 @@ exports.login = async (req, res, next) => {
       .status(422)
       .json({ message: "Validation failded.", error: errors.array()[0].msg });
   }
-  const email = req.body.email;
+  const phoneNumber = req.body.phoneNumber;
   const password = req.body.password;
   try {
-    const user = await User.findOne({ email: email });
+    const user = await User.findOne({ phoneNumber: phoneNumber });
     if (!user) {
       return res
         .status(404)
-        .json({ message: "A user with this email could not be found." });
+        .json({ message: "A user with this phoneNumber could not be found." });
     }
     const isEqual = await bcrypt.compare(password, user.password);
     if (!isEqual) {
@@ -61,7 +61,7 @@ exports.login = async (req, res, next) => {
     }
     const token = jwt.sign(
       {
-        email: user.email,
+        phoneNumber: user.phoneNumber,
         userId: user._id.toString(),
       },
       "secret",

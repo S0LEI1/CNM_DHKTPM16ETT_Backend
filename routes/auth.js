@@ -32,8 +32,9 @@ router.put(
 router.post(
   "/login",
   [
-    body("email")
-      .isEmail()
+    body("phoneNumber")
+      .isMobilePhone().withMessage("Phone invalid")
+      .isLength({min:10, max:10})
       .withMessage("Phone number must be 10 digits."),
     body("password")
       .trim()
