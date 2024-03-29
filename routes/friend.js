@@ -9,13 +9,6 @@ router.get("/list", isAuth, friendController.getListFriends);
 router.get("/:friendId", isAuth, friendController.getFriend);
 router.get(
   "/find/:phoneNumber",
-  [
-    body("phoneNumber")
-      .isMobilePhone()
-      .withMessage("Phone not validate")
-      .isLength({ min: 10, max: 10 })
-      .withMessage("Phone number only 10 "),
-  ],
   isAuth,
   friendController.findFriendByPhone
 );

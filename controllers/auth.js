@@ -6,6 +6,7 @@ const User = require("../models/user");
 const { s3 } = require("../utils/aws_hepler");
 const message = require("../models/message");
 const { updateAvatar } = require("../services/upload_file");
+const { generateOTP } = require("../utils/otp");
 
 exports.signup = async (req, res, next) => {
   const errors = validationResult(req);
@@ -17,6 +18,7 @@ exports.signup = async (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
   const name = req.body.name;
+  const otp = generateOTP(6);
   try {
     const hashedPwd = await bcrypt.hash(password, 12);
     const friends = [];
@@ -29,6 +31,7 @@ exports.signup = async (req, res, next) => {
       name: name,
       friends: friends,
       conversations: conversations,
+      otp: otp,
     });
     await user.save();
     res.status(201).json({ message: "User created.", userId: user._id });
