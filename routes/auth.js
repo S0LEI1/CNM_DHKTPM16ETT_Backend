@@ -7,43 +7,25 @@ const User = require("../models/user");
 
 const authController = require("../controllers/auth");
 
-router.put(
-  "/signup",
-  [
-    body("email")
-      .isEmail()
-      .withMessage("Email invalid")
-      .custom((value, { req }) => {
-        return User.findOne({ email: value }).then((userDoc) => {
-          if (userDoc) {
-            return Promise.reject("Email already exists.");
-          }
-        });
-      }),
-    body("password")
-      .trim()
-      .isLength({ min: 5 })
-      .withMessage("Password must be at least 9 to 15 characters"),
-    body("name").trim().not().isEmpty().withMessage("Name not empty"),
-  ],
-  authController.signup
-);
+router.put("/signup", authController.signup);
 
-router.post(
-  "/login",
-  [
-    body("phoneNumber")
-      .isMobilePhone().withMessage("Phone invalid")
-      .isLength({min:10, max:10})
-      .withMessage("Phone number must be 10 digits."),
-    body("password")
-      .trim()
-      .isLength({ min: 5 })
-      .withMessage("Password too short"),
-  ],
-  authController.login
-);
+router.post("/login", authController.login);
 
 router.put("/update", isAuth, authController.updateAvatar);
 router.get("/user", isAuth, authController.getUser);
+
+router.put(
+  "/verify/:email",
+  [
+    body("otp")
+      .isNumeric()
+      .withMessage("OTP invalid")
+      .isLength({ min: 6, max: 6 })
+      .withMessage("OTP has a 6-digit number"),
+  ],
+  authController.verifyOtp
+);
+
+router.get("/logout", isAuth, authController.logout);
+
 module.exports = router;
