@@ -39,15 +39,16 @@ const authService = {
     }
   },
 
-  getUserByEmail: async (email) => {
-    try {
-      return await User.findOne(
-        { email: email },
-        { _id: 1, email: 1, phoneNumber: 1, otp: 1, activeOtp: 1 }
-      );
-    } catch (error) {
-      throw error;
-    }
-  },
+  // getUserByEmail: async (email) => {
+  //   try {
+  //     return await User.findOne(
+  //       { email: email },
+  //       { _id: 1, email: 1, phoneNumber: 1, otp: 1, activeOtp: 1 }
+  //     );
+  //   } catch (error) {
+  //     throw error;
+  //   }
+  // },
+  
 };
 module.exports = authService;

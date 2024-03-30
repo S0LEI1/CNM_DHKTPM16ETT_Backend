@@ -25,7 +25,7 @@ router.put(
   ],
   authController.verifyOtp
 );
-
+router.get("/resendOtp", authController.resendOtp);
 router.get("/logout", isAuth, authController.logout);
 
 module.exports = router;

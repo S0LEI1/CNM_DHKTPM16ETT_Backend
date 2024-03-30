@@ -9,7 +9,12 @@ const { updateAvatar } = require("../services/upload_file");
 const { generateOTP } = require("../utils/otp");
 const { USER_NOT_FOUND_ERR } = require("../errors");
 const authService = require("../services/auth.service");
-const { validateEmail, validateSignup, validateLogin } = require("../utils/validate");
+const {
+  validateEmail,
+  validateSignup,
+  validateLogin,
+} = require("../utils/validate");
+const userService = require("../services/user.services");
 
 exports.signup = async (req, res, next) => {
   const { email, phoneNumber, password, name } = req.body;
@@ -76,9 +81,9 @@ exports.login = async (req, res, next) => {
 
 exports.verifyOtp = async (req, res, next) => {
   const { otp } = req.body;
-  const { email } = req.params;
+  const { params } = req.params;
   try {
-    const user = await authService.getUserByEmail(email);
+    const user = await userService.getUser(params);
     console.log(user);
     if (!user) {
       return res.status(404).json({ message: USER_NOT_FOUND_ERR });
@@ -120,6 +125,7 @@ exports.updateAvatar = async (req, res) => {
     res.status(500).json({ message: "Update avatar fail.", error: error });
   }
 };
+
 exports.getUser = async (req, res, next) => {
   const userId = req.userId;
   try {
@@ -137,5 +143,24 @@ exports.getUser = async (req, res, next) => {
 };
 
 exports.logout = async (req, res, next) => {
-  return res.status(202).clearCookie('token').send('cookie cleared')
+  return res.status(202).clearCookie("token").send("cookie cleared");
+};
+
+exports.resendOtp = async (req, res, next) => {
+  const { params } = req.body;
+  try {
+    const user = await userService.getUser(params);
+    if (!user) {
+      return res.status(404).json({ message: USER_NOT_FOUND_ERR });
+    }
+    user.otp = generateOTP(6);
+    await user.save();
+    await authService.sendMail(user.email, user.otp);
+    res.status(200).json({message:"Resend success",user_otp: user.otp});
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode === 500;
+    }
+    next(error);
+  }
 };
