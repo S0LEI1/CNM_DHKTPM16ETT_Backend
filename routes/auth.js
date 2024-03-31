@@ -7,13 +7,18 @@ const User = require("../models/user");
 
 const authController = require("../controllers/auth");
 
-router.put("/signup", authController.signup);
+// /auth/signup
+router.post("/signup", authController.signup);
 
+// /auth/login
 router.post("/login", authController.login);
 
+// /auth/update
 router.put("/update", isAuth, authController.updateAvatar);
+// /auth/user
 router.get("/user", isAuth, authController.getUser);
 
+// /auth/verify/vanngoc@gmail.com
 router.put(
   "/verify/:email",
   [
@@ -25,7 +30,11 @@ router.put(
   ],
   authController.verifyOtp
 );
+// /auth/resendOtp
 router.get("/resendOtp", authController.resendOtp);
+// /auth/logout
 router.get("/logout", isAuth, authController.logout);
+
+router.put("/resetPassword", authController.resetPassword);
 
 module.exports = router;

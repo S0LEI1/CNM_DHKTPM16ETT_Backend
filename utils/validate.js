@@ -7,8 +7,11 @@ const {
   PASSWORD_ERR,
   PASSWORD_NOT_MATCH_ERR,
   NAME_ERR,
+  EMAIL_EXIST_ERR,
+  PHONE_EXIST_ERR,
 } = require("../errors");
 const User = require("../models/user");
+const userService = require("../services/user.services");
 const REGEX_PASSWORD =
   /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,16}$/;
 const REGEX_VN_CHARECTER =
@@ -17,18 +20,22 @@ module.exports = {
   validateSignup: async (payload) => {
     const { email, phoneNumber, password, confirmPassword, name } = payload;
     const errors = [];
-    const user = await User.findOne({ email: email });
+    
+    const user =  User.findOne( { $or:[{'phoneNumber':phoneNumber}, {'email':email} ]})
     if (!validator.isEmail(email)) {
-      errors.push("Email invalid");
+      errors.push(EMAIL_INVALID_ERR);
     }
-    if (user) {
-      errors.push("Email ready exist");
+    if (user.email !== null) {
+      errors.push(EMAIL_EXIST_ERR);
     }
     if (!validator.isMobilePhone(phoneNumber)) {
       errors.push(PHONE_INVALID_ERR);
     }
     if (!validator.isLength(phoneNumber, { min: 10, max: 10 })) {
       errors.push(PHONE_LENGTH_ERR);
+    }
+    if (user.phoneNumber !== null) {
+      errors.push(PHONE_EXIST_ERR);
     }
     if (!REGEX_PASSWORD.test(password)) {
       errors.push(PASSWORD_ERR);

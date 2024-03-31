@@ -16,6 +16,7 @@ const app = express();
 
 
 app.use(bodyParser.json()); // application/json
+app.use(bodyParser.urlencoded({ extended: true }))
 // app.use(
 //   multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
 // );

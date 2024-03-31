@@ -7,7 +7,7 @@ const { s3 } = require("../utils/aws_hepler");
 const message = require("../models/message");
 const { updateAvatar } = require("../services/upload_file");
 const { generateOTP } = require("../utils/otp");
-const { USER_NOT_FOUND_ERR } = require("../errors");
+const { USER_NOT_FOUND_ERR, PASSWORD_NOT_MATCH_ERR } = require("../errors");
 const authService = require("../services/auth.service");
 const {
   validateEmail,
@@ -154,9 +154,34 @@ exports.resendOtp = async (req, res, next) => {
       return res.status(404).json({ message: USER_NOT_FOUND_ERR });
     }
     user.otp = generateOTP(6);
+    user.activeOtp = false;
     await user.save();
     await authService.sendMail(user.email, user.otp);
-    res.status(200).json({message:"Resend success",user_otp: user.otp});
+    res.status(200).json({ message: "Resend success", user_otp: user.otp });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode === 500;
+    }
+    next(error);
+  }
+};
+
+exports.resetPassword = async (req, res, next) => {
+  const params = req.body.params;
+  const password = req.body.password;
+  try {
+    const user = await userService.getUser(params);
+    if (!user) {
+      return res.status(404).json({ message: USER_NOT_FOUND_ERR });
+    }
+    // await authService.resetPassword(user, password);
+    const hashedPwd = await bcrypt.hash(password, 12);
+    user.password = hashedPwd;
+    user.activeOtp = false;
+    user.otp = generateOTP(6);
+    await authService.sendMail(user.email, user.otp);
+    res.status(200).json({message:"Reset password success"})
+
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode === 500;

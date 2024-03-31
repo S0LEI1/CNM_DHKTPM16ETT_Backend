@@ -1,8 +1,10 @@
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
+const userService = require("./user.services");
+const { generateOTP } = require("../utils/otp");
 const authService = {
-  signupUser: async (user)=>{
+  signupUser: async (user) => {
     const hashedPwd = await bcrypt.hash(user.password, 12);
     user.password = hashedPwd;
     await user.save();
@@ -38,17 +40,17 @@ const authService = {
       throw error;
     }
   },
-
-  // getUserByEmail: async (email) => {
-  //   try {
-  //     return await User.findOne(
-  //       { email: email },
-  //       { _id: 1, email: 1, phoneNumber: 1, otp: 1, activeOtp: 1 }
-  //     );
-  //   } catch (error) {
-  //     throw error;
-  //   }
-  // },
-  
+  resetPassword: async (user, password) => {
+    try {
+      const hashedPwd = await bcrypt.hash(password, 12);
+      user.password = hashedPwd;
+      user.activeOtp = false;
+      user.otp = generateOTP(6);
+      await user.save();
+    } catch (error) {
+      console.log("Reset password faild");
+      throw error;
+    }
+  },
 };
 module.exports = authService;
