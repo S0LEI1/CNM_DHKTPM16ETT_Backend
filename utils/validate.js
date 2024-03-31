@@ -16,8 +16,8 @@ const REGEX_PASSWORD =
   /^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*\W)(?!.* ).{8,16}$/;
 const REGEX_VN_CHARECTER =
   /[^a-z0-9A-Z_ÀÁÂÃÈÉÊÌÍÒÓÔÕÙÚĂĐĨŨƠàáâãèéêìíòóôõùúăđĩũơƯĂẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼỀỀỂưăạảấầẩẫậắằẳẵặẹẻẽềềểỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪễếệỉịọỏốồổỗộớờởỡợụủứừỬỮỰỲỴÝỶỸửữựỳỵỷỹ]/u;
-module.exports = {
-  validateSignup: async (payload) => {
+const validate = {
+  signup: async (payload) => {
     const { email, phoneNumber, password, confirmPassword, name } = payload;
     const errors = [];
 
@@ -26,7 +26,7 @@ module.exports = {
     });
     console.log(user);
     if (!validator.isEmail(email)) {
-      errors.push(EMAIL_INVALID_ERR);
+      errors.push(EMAIL_INVALID_ERR);s
     }
     if (user) {
       errors.push(EMAIL_EXIST_ERR + "-or-" + PHONE_EXIST_ERR);
@@ -54,7 +54,7 @@ module.exports = {
     }
     return null;
   },
-  validateLogin: (payload) => {
+  login: (payload) => {
     const { phoneNumber, password } = payload;
     const errors = [];
     if (!validator.isMobilePhone(phoneNumber)) {
@@ -71,7 +71,7 @@ module.exports = {
     }
     return null;
   },
-  validatePassword: (payload) => {
+  password: (payload) => {
     const { password, confirmPassword } = payload;
     const errors = [];
     if (!REGEX_PASSWORD.test(password)) {
@@ -85,7 +85,7 @@ module.exports = {
     }
     return null;
   },
-  validateName: (payload) => {
+  name: (payload) => {
     const { name } = payload;
     const errors = [];
 
@@ -100,4 +100,21 @@ module.exports = {
     }
     return null;
   },
-};
+  otp: async(otpTime) =>{
+    try {
+      console.log("Milliseconds is" + otpTime);
+      const cDate = new Date();
+      var differenceValue = (otpTime - cDate.getTime()) / 1000;
+      differenceValue /= 60;
+      const minutes = Math.abs(differenceValue);
+      console.log("Expired minutes:-", minutes);
+      if(minutes > 2){
+        return true
+      }
+      return false;
+    } catch (error) {
+      throw error;
+    }
+  }
+}; 
+module.exports = validate;

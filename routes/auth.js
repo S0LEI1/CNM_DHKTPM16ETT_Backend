@@ -19,24 +19,13 @@ router.put("/update", isAuth, authController.updateAvatar);
 router.get("/user", isAuth, authController.getUser);
 
 // /auth/verify/vanngoc@gmail.com
-router.put(
-  "/verify/:params",
-  [
-    body("otp")
-      .isNumeric()
-      .withMessage("OTP invalid")
-      .isLength({ min: 6, max: 6 })
-      .withMessage("OTP has a 6-digit number"),
-  ],
-  authController.verifyOtp
-);
+router.post("/verify", authController.verifyOtp);
 // /auth/resendOtp
 router.get("/resendOtp", authController.resendOtp);
-// /auth/logout
-// router.get("/logout", isAuth, authController.logout);
+
 // /auth/resetPassword
 router.put("/resetPassword", authController.resetPassword);
 
-router.put("/updateName", isAuth, authController.updateName);
+// router.put("/updateName", isAuth, authController.updateName);
 
 module.exports = router;

@@ -2,14 +2,15 @@ const nodemailer = require("nodemailer");
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const userService = require("./user.services");
-const { generateOTP } = require("../utils/otp");
+const otpGenerator = require("otp-generator");
+const OtpModel = require("../models/otp")
 const authService = {
   signupUser: async (user) => {
     const hashedPwd = await bcrypt.hash(user.password, 12);
     user.password = hashedPwd;
     await user.save();
   },
-  sendMail: async (email, otp) => {
+  sendMail: async (email, otp, subject) => {
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 587,
@@ -26,7 +27,7 @@ const authService = {
     const info = await transporter.sendMail({
       from: '"ChatChit 👻" <chatchit16att@gmail.com>', // sender address
       to: email,
-      subject: "Signup success ✔",
+      subject: `${subject} ✔`,
       text: "Hello world?", // plain text body
       html: html, // html body
     });
@@ -52,5 +53,18 @@ const authService = {
       throw error;
     }
   },
+  createOtpModel: async(email) =>{
+    const otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      specialChars: false,
+      lowerCaseAlphabets: false,
+    });
+    const cDate = new Date();
+    return await OtpModel.findOneAndUpdate(
+      { email: email },
+      { otp, expiration: new Date(cDate.getTime()) },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+  }
 };
 module.exports = authService;

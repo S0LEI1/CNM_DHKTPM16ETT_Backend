@@ -1,27 +1,19 @@
 const mongoose = require("mongoose");
-const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+
 const User = require("../models/user");
-const { s3 } = require("../utils/aws_hepler");
-const message = require("../models/message");
+const OtpModel = require("../models/otp");
+
 const { updateAvatar } = require("../services/upload_file");
-const { generateOTP } = require("../utils/otp");
-const { USER_NOT_FOUND_ERR, PASSWORD_NOT_MATCH_ERR } = require("../errors");
+const { USER_NOT_FOUND_ERR, PASSWORD_NOT_MATCH_ERR, OTP_NOT_FOUND_ERR, OTP_EXPIRED_ERR } = require("../errors");
 const authService = require("../services/auth.service");
-const {
-  validateEmail,
-  validateSignup,
-  validateLogin,
-  validatePassword,
-  validateName,
-} = require("../utils/validate");
+const validate = require("../utils/validate")
 const userService = require("../services/user.services");
 
 exports.signup = async (req, res, next) => {
   const { email, phoneNumber, password, name } = req.body;
-  const otp = generateOTP(6);
-  const errors = await validateSignup(req.body);
+  const errors =  await validate.signup(req.body);
   if (errors) {
     return res.status(500).json({ message: "Validate fail", errors: errors });
   }
@@ -31,11 +23,11 @@ exports.signup = async (req, res, next) => {
       password: password,
       phoneNumber: phoneNumber,
       name: name,
-      otp: otp,
     });
     await authService.signupUser(user);
-    authService.sendMail(email, otp);
-    res.status(201).json({ message: "User created.", userId: user._id });
+    const otpData = await authService.createOtpModel(email);
+    authService.sendMail(email, otpData.otp,"Signup success");
+    res.status(201).json({ message: "User created.", userId: user._id, otpData_otp: otpData.otp });
   } catch (err) {
     if (!err.statusCode) {
       err.statusCode === 500;
@@ -46,7 +38,7 @@ exports.signup = async (req, res, next) => {
 
 exports.login = async (req, res, next) => {
   const { phoneNumber, password } = req.body;
-  const errors = validateLogin(req.body);
+  const errors = validate.login(req.body);
   if (errors) {
     return res.status(500).json({ message: "Validate fail", errors: errors });
   }
@@ -57,9 +49,13 @@ exports.login = async (req, res, next) => {
         .status(404)
         .json({ message: "A user with this phoneNumber could not be found." });
     }
-    if (user.activeOtp === false) {
+    const isExistOtp = await OtpModel.findOne({email: user.email});
+    if(isExistOtp){
       return res.status(500).json({ message: "Account not verify Otp" });
     }
+    // if (user.activeOtp === false) {
+    //   return res.status(500).json({ message: "Account not verify Otp" });
+    // }
     const isEqual = await bcrypt.compare(password, user.password);
     if (!isEqual) {
       return res.status(404).json({ message: "Wrong password." });
@@ -82,18 +78,18 @@ exports.login = async (req, res, next) => {
 };
 
 exports.verifyOtp = async (req, res, next) => {
-  const { otp } = req.body;
-  const { params } = req.params;
+  const { otp, email } = req.body;
   try {
-    const user = await userService.getUser(params);
-    console.log(user);
-    if (!user) {
-      return res.status(404).json({ message: USER_NOT_FOUND_ERR });
+    const otpData = await OtpModel.findOne({ email: email, otp: otp });
+    if(!otp){
+      res.status(404).json({message: OTP_NOT_FOUND_ERR})
     }
-    if (user.otp !== otp) {
-      return res.status(404).json({ message: "Otp not match" });
+    const isOtpExpired = await validate.otp(otpData.expiration);
+    if(isOtpExpired){
+      await otpData.deleteOne();
+      return res.status(400).json({message: OTP_EXPIRED_ERR});
     }
-    await authService.verifyOtp(user, otp);
+    await otpData.deleteOne();
     return res.status(200).json({ message: "Verify success" });
   } catch (error) {
     if (!error.statusCode) {
@@ -149,9 +145,6 @@ exports.getUser = async (req, res, next) => {
   }
 };
 
-// exports.logout = async (req, res, next) => {
-//   return res.status(202).clearCookie("token").send("cookie cleared");
-// };
 
 exports.resendOtp = async (req, res, next) => {
   const { params } = req.body;
@@ -160,11 +153,9 @@ exports.resendOtp = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ message: USER_NOT_FOUND_ERR });
     }
-    user.otp = generateOTP(6);
-    user.activeOtp = false;
-    await user.save();
-    await authService.sendMail(user.email, user.otp);
-    res.status(200).json({ message: "Resend success", user_otp: user.otp });
+    const otpData = await authService.createOtpModel(user.email);
+    await authService.sendMail(user.email, otpData.otp,"Resend OTP");
+    res.status(200).json({ message: "Resend success", otpData_otp:otpData.otp });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode === 500;
@@ -177,7 +168,7 @@ exports.resetPassword = async (req, res, next) => {
   const params = req.body.params;
   const password = req.body.password;
   try {
-    const errors = validatePassword(req.body);
+    const errors = validate.password(req.body);
     if (errors) {
       return res.status(500).json({ message: "Validate fail", errors: errors });
     }
@@ -188,10 +179,9 @@ exports.resetPassword = async (req, res, next) => {
     // await authService.resetPassword(user, password);
     const hashedPwd = await bcrypt.hash(password, 12);
     user.password = hashedPwd;
-    user.activeOtp = false;
-    user.otp = generateOTP(6);
-    await user.save();
-    await authService.sendMail(user.email, user.otp);
+    
+    const otpData = authService.createOtpModel(user.email);
+    await authService.sendMail(user.email, otpData.otp,"Reset password");
     res.status(200).json({ message: "Reset password success" });
   } catch (error) {
     if (!error.statusCode) {
@@ -201,23 +191,23 @@ exports.resetPassword = async (req, res, next) => {
   }
 };
 
-exports.updateName =async(req, res, next) =>{
+exports.updateName = async (req, res, next) => {
   const userId = req.userId;
-  const {name} = req.body;
+  const { name } = req.body;
   try {
-    const errors = validateName(req.body);
+    const errors = validate.name(req.body);
     if (errors) {
       return res.status(500).json({ message: "Validate fail", errors: errors });
     }
-    const user = await User.findByIdAndUpdate(userId,{name: name});
-    if(!user){
-      return res.status(400).json({message:USER_NOT_FOUND_ERR});
+    const user = await User.findByIdAndUpdate(userId, { name: name });
+    if (!user) {
+      return res.status(400).json({ message: USER_NOT_FOUND_ERR });
     }
-    res.status(200).json({message:"Update name success", user});
+    res.status(200).json({ message: "Update name success", user });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode === 500;
     }
     next(error);
   }
-}
+};

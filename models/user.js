@@ -40,13 +40,6 @@ const userSchema = new Schema(
         ref: "AddFriend",
       },
     ],
-    otp: {
-      type: String,
-    },
-    activeOtp: {
-      type: Boolean,
-      default: false,
-    },
   },
   { timestamps: true }
 );

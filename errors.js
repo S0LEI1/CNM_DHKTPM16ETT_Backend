@@ -10,3 +10,5 @@ exports.PHONE_EXIST_ERR = "Phone number ready exist"
 exports.PASSWORD_NOT_MATCH_ERR = "Password not match"
 exports.PASSWORD_ERR = "Password must contain one digit from 1 to 9, one lowercase letter, one uppercase letter, one special character, no space, and it must be 8-16 characters long."
 exports.NAME_ERR ="Username must be 3 to 15 characters long, the first character must be an uppercase letter"
+exports.OTP_NOT_FOUND_ERR = "Otp not found";
+exports.OTP_EXPIRED_ERR = "Your Otp has been expired!"
