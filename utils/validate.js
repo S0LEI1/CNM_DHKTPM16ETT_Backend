@@ -25,7 +25,7 @@ module.exports = {
     if (!validator.isEmail(email)) {
       errors.push(EMAIL_INVALID_ERR);
     }
-    if (user.email !== null) {
+    if (user) {
       errors.push(EMAIL_EXIST_ERR);
     }
     if (!validator.isMobilePhone(phoneNumber)) {
@@ -34,9 +34,9 @@ module.exports = {
     if (!validator.isLength(phoneNumber, { min: 10, max: 10 })) {
       errors.push(PHONE_LENGTH_ERR);
     }
-    if (user.phoneNumber !== null) {
-      errors.push(PHONE_EXIST_ERR);
-    }
+    // if (user.phoneNumber !== null) {
+    //   errors.push(PHONE_EXIST_ERR);
+    // }
     if (!REGEX_PASSWORD.test(password)) {
       errors.push(PASSWORD_ERR);
     }
