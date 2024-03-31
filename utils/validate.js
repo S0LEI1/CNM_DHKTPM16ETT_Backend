@@ -85,4 +85,19 @@ module.exports = {
     }
     return null;
   },
+  validateName: (payload) => {
+    const { name } = payload;
+    const errors = [];
+
+    if (
+      !validator.isLength(name, { min: 2, max: 20 }) &&
+      !REGEX_VN_CHARECTER.test(name)
+    ) {
+      errors.push(NAME_ERR);
+    }
+    if (errors?.length > 0) {
+      return errors;
+    }
+    return null;
+  },
 };

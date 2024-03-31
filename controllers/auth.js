@@ -14,6 +14,7 @@ const {
   validateSignup,
   validateLogin,
   validatePassword,
+  validateName,
 } = require("../utils/validate");
 const userService = require("../services/user.services");
 
@@ -199,3 +200,24 @@ exports.resetPassword = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.updateName =async(req, res, next) =>{
+  const userId = req.userId;
+  const {name} = req.body;
+  try {
+    const errors = validateName(req.body);
+    if (errors) {
+      return res.status(500).json({ message: "Validate fail", errors: errors });
+    }
+    const user = await User.findByIdAndUpdate(userId,{name: name});
+    if(!user){
+      return res.status(400).json({message:USER_NOT_FOUND_ERR});
+    }
+    res.status(200).json({message:"Update name success", user});
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode === 500;
+    }
+    next(error);
+  }
+}

@@ -34,7 +34,9 @@ router.put(
 router.get("/resendOtp", authController.resendOtp);
 // /auth/logout
 // router.get("/logout", isAuth, authController.logout);
-
+// /auth/resetPassword
 router.put("/resetPassword", authController.resetPassword);
+
+router.put("/updateName", isAuth, authController.updateName);
 
 module.exports = router;
