@@ -21,12 +21,13 @@ module.exports = {
     const { email, phoneNumber, password, confirmPassword, name } = payload;
     const errors = [];
     
-    const user =  User.findOne( { $or:[{'phoneNumber':phoneNumber}, {'email':email} ]})
+    const user =  await User.findOne( { $or:[{'phoneNumber':phoneNumber}, {'email':email} ]})
+    console.log(user);
     if (!validator.isEmail(email)) {
       errors.push(EMAIL_INVALID_ERR);
     }
     if (user) {
-      errors.push(EMAIL_EXIST_ERR);
+      errors.push(EMAIL_EXIST_ERR + "-or-" + PHONE_EXIST_ERR);
     }
     if (!validator.isMobilePhone(phoneNumber)) {
       errors.push(PHONE_INVALID_ERR);
@@ -34,9 +35,6 @@ module.exports = {
     if (!validator.isLength(phoneNumber, { min: 10, max: 10 })) {
       errors.push(PHONE_LENGTH_ERR);
     }
-    // if (user.phoneNumber !== null) {
-    //   errors.push(PHONE_EXIST_ERR);
-    // }
     if (!REGEX_PASSWORD.test(password)) {
       errors.push(PASSWORD_ERR);
     }

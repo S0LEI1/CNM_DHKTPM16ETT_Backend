@@ -179,6 +179,7 @@ exports.resetPassword = async (req, res, next) => {
     user.password = hashedPwd;
     user.activeOtp = false;
     user.otp = generateOTP(6);
+    await user.save();
     await authService.sendMail(user.email, user.otp);
     res.status(200).json({message:"Reset password success"})
 

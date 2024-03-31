@@ -20,7 +20,7 @@ router.get("/user", isAuth, authController.getUser);
 
 // /auth/verify/vanngoc@gmail.com
 router.put(
-  "/verify/:email",
+  "/verify/:params",
   [
     body("otp")
       .isNumeric()

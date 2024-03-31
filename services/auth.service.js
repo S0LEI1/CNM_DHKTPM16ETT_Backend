@@ -20,8 +20,8 @@ const authService = {
       },
     });
     const html = `<h3>Hi,</h3><br>
-    <b>Please use the following One Time Password (OTP) to access the form: ${otp}. Do not share this ITO with any</b><br>
-    <b>Thank you</>
+    <p>Please use the following One Time Password (OTP) to access the form: <b>${otp}</b>. Do not share this OTP with any</b><br>
+    <b>Thank you</p>
   `;
     const info = await transporter.sendMail({
       from: '"ChatChit 👻" <chatchit16att@gmail.com>', // sender address
