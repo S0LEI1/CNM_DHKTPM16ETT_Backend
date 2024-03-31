@@ -13,6 +13,7 @@ const {
   validateEmail,
   validateSignup,
   validateLogin,
+  validatePassword,
 } = require("../utils/validate");
 const userService = require("../services/user.services");
 
@@ -129,7 +130,12 @@ exports.updateAvatar = async (req, res) => {
 exports.getUser = async (req, res, next) => {
   const userId = req.userId;
   try {
-    const user = await User.findById(userId, { _id: 1, name: 1, avatar: 1, phoneNumber:1  });
+    const user = await User.findById(userId, {
+      _id: 1,
+      name: 1,
+      avatar: 1,
+      phoneNumber: 1,
+    });
     if (!user) {
       return res.status(500).json({ message: "Could not find user" });
     }
@@ -142,9 +148,9 @@ exports.getUser = async (req, res, next) => {
   }
 };
 
-exports.logout = async (req, res, next) => {
-  return res.status(202).clearCookie("token").send("cookie cleared");
-};
+// exports.logout = async (req, res, next) => {
+//   return res.status(202).clearCookie("token").send("cookie cleared");
+// };
 
 exports.resendOtp = async (req, res, next) => {
   const { params } = req.body;
@@ -170,6 +176,10 @@ exports.resetPassword = async (req, res, next) => {
   const params = req.body.params;
   const password = req.body.password;
   try {
+    const errors = validatePassword(req.body);
+    if (errors) {
+      return res.status(500).json({ message: "Validate fail", errors: errors });
+    }
     const user = await userService.getUser(params);
     if (!user) {
       return res.status(404).json({ message: USER_NOT_FOUND_ERR });
@@ -181,8 +191,7 @@ exports.resetPassword = async (req, res, next) => {
     user.otp = generateOTP(6);
     await user.save();
     await authService.sendMail(user.email, user.otp);
-    res.status(200).json({message:"Reset password success"})
-
+    res.status(200).json({ message: "Reset password success" });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode === 500;

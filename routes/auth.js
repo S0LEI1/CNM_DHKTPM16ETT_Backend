@@ -33,7 +33,7 @@ router.put(
 // /auth/resendOtp
 router.get("/resendOtp", authController.resendOtp);
 // /auth/logout
-router.get("/logout", isAuth, authController.logout);
+// router.get("/logout", isAuth, authController.logout);
 
 router.put("/resetPassword", authController.resetPassword);
 

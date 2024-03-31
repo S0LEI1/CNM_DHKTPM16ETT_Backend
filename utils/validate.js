@@ -20,8 +20,10 @@ module.exports = {
   validateSignup: async (payload) => {
     const { email, phoneNumber, password, confirmPassword, name } = payload;
     const errors = [];
-    
-    const user =  await User.findOne( { $or:[{'phoneNumber':phoneNumber}, {'email':email} ]})
+
+    const user = await User.findOne({
+      $or: [{ phoneNumber: phoneNumber }, { email: email }],
+    });
     console.log(user);
     if (!validator.isEmail(email)) {
       errors.push(EMAIL_INVALID_ERR);
@@ -63,6 +65,20 @@ module.exports = {
     }
     if (!REGEX_PASSWORD.test(password)) {
       errors.push(PASSWORD_ERR);
+    }
+    if (errors?.length > 0) {
+      return errors;
+    }
+    return null;
+  },
+  validatePassword: (payload) => {
+    const { password, confirmPassword } = payload;
+    const errors = [];
+    if (!REGEX_PASSWORD.test(password)) {
+      errors.push(PASSWORD_ERR);
+    }
+    if (password !== confirmPassword) {
+      errors.push(PASSWORD_NOT_MATCH_ERR);
     }
     if (errors?.length > 0) {
       return errors;
