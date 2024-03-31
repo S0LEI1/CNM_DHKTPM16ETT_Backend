@@ -129,7 +129,7 @@ exports.updateAvatar = async (req, res) => {
 exports.getUser = async (req, res, next) => {
   const userId = req.userId;
   try {
-    const user = await User.findById(userId, { _id: 1, name: 1, avatar: 1 });
+    const user = await User.findById(userId, { _id: 1, name: 1, avatar: 1, phoneNumber:1  });
     if (!user) {
       return res.status(500).json({ message: "Could not find user" });
     }
