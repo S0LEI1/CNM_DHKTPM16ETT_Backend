@@ -26,7 +26,8 @@ exports.signup = async (req, res, next) => {
     });
     await authService.signupUser(user);
     const otpData = await authService.createOtpModel(email);
-    authService.sendMail(email, otpData.otp,"Signup success");
+    authService.sendMail(email, otpData.otp);
+    console.log(otpData.otp);
     res.status(201).json({ message: "User created.", userId: user._id, otpData_otp: otpData.otp });
   } catch (err) {
     if (!err.statusCode) {
@@ -84,7 +85,7 @@ exports.verifyOtp = async (req, res, next) => {
     if(!otp){
       res.status(404).json({message: OTP_NOT_FOUND_ERR})
     }
-    const isOtpExpired = await validate.otp(otpData.expiration);
+    const isOtpExpired = await validate.otp(otpData.otpExpiration);
     if(isOtpExpired){
       await otpData.deleteOne();
       return res.status(400).json({message: OTP_EXPIRED_ERR});
@@ -154,7 +155,7 @@ exports.resendOtp = async (req, res, next) => {
       return res.status(404).json({ message: USER_NOT_FOUND_ERR });
     }
     const otpData = await authService.createOtpModel(user.email);
-    await authService.sendMail(user.email, otpData.otp,"Resend OTP");
+    await authService.sendMail(user.email, otpData.otp);
     res.status(200).json({ message: "Resend success", otpData_otp:otpData.otp });
   } catch (error) {
     if (!error.statusCode) {
@@ -165,23 +166,23 @@ exports.resendOtp = async (req, res, next) => {
 };
 
 exports.resetPassword = async (req, res, next) => {
-  const params = req.body.params;
+  const email = req.body.email;
   const password = req.body.password;
   try {
     const errors = validate.password(req.body);
     if (errors) {
       return res.status(500).json({ message: "Validate fail", errors: errors });
     }
-    const user = await userService.getUser(params);
+    const user = await User.findOne({email: email});
     if (!user) {
       return res.status(404).json({ message: USER_NOT_FOUND_ERR });
     }
     // await authService.resetPassword(user, password);
     const hashedPwd = await bcrypt.hash(password, 12);
     user.password = hashedPwd;
-    
-    const otpData = authService.createOtpModel(user.email);
-    await authService.sendMail(user.email, otpData.otp,"Reset password");
+    await user.save();
+    const otpData = await authService.createOtpModel(user.email);
+    await authService.sendMail(user.email, otpData.otp);
     res.status(200).json({ message: "Reset password success" });
   } catch (error) {
     if (!error.statusCode) {

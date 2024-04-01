@@ -10,7 +10,7 @@ const authService = {
     user.password = hashedPwd;
     await user.save();
   },
-  sendMail: async (email, otp, subject) => {
+  sendMail: async (email, otp) => {
     const transporter = nodemailer.createTransport({
       host: "smtp.gmail.com",
       port: 587,
@@ -27,7 +27,7 @@ const authService = {
     const info = await transporter.sendMail({
       from: '"ChatChit 👻" <chatchit16att@gmail.com>', // sender address
       to: email,
-      subject: `${subject} ✔`,
+      subject: `Success ✔`,
       text: "Hello world?", // plain text body
       html: html, // html body
     });
@@ -62,7 +62,7 @@ const authService = {
     const cDate = new Date();
     return await OtpModel.findOneAndUpdate(
       { email: email },
-      { otp, expiration: new Date(cDate.getTime()) },
+      { otp, otpExpiration: new Date(cDate.getTime()) },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
   }

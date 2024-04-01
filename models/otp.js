@@ -10,11 +10,11 @@ const otpSchema = new Schema({
         type: String,
         require: true
     },
-    expiration:{
+    otpExpiration:{
         type: Date,
         default: Date.now,
-        get: (expiration) => expiration.getTime(),
-        set: (expiration) => new Date(expiration),
+        get: (otpExpiration) => otpExpiration.getTime(),
+        set: (otpExpiration) => new Date(otpExpiration),
     }
 })
 
