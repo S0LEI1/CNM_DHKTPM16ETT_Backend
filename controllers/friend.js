@@ -1,10 +1,6 @@
 const mongoose = require("mongoose");
-const { validationResult } = require("express-validator");
 const validator = require("validator");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
 const User = require("../models/user");
-const message = require("../models/message");
 const AddFriend = require("../models/add_friend");
 const io = require("../socket");
 
@@ -53,12 +49,6 @@ exports.getFriend = async (req, res, next) => {
 };
 
 exports.findFriendByPhone = async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res
-      .status(422)
-      .json({ message: "Validation failded.", error: errors.array()[0].msg });
-  }
   try {
     const phoneNumber = req.params.phoneNumber;
     if(!validator.isMobilePhone(phoneNumber,"vi-VN") || !validator.isLength(phoneNumber,[{max:10, min:10}])){
@@ -66,12 +56,18 @@ exports.findFriendByPhone = async (req, res, next) => {
     }
     const friend = await User.findOne(
       { phoneNumber: phoneNumber },
-      { _id: 1, name: 1, avatar: 1 }
+      { _id: 1, name: 1, avatar: 1, phoneNumber:1 }
     );
     if(!friend){
       return res.status(404).json({message:"User not exist"})
     }
-    res.status(200).json({ message: "Find success", friend: friend });
+    const user = await User.findById(req.userId);
+    const isExistFriend = user.friends.includes(friend.id);
+    console.log(isExistFriend);
+    if(isExistFriend === true){
+      return res.status(200).json({ message: "Find success", friend: friend, isExistFriend, user });
+    }
+    res.status(200).json({ message: "Find success", friend: friend, user });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode === 500;
@@ -82,8 +78,8 @@ exports.findFriendByPhone = async (req, res, next) => {
 exports.addFriend = async (req, res, next) => {
   try {
     const userId = req.userId;
-    const friendId = req.params.friendId;
-    const content = req.body.content;
+    const {friendId} = req.params;
+    const {content} = req.body;
 
     const user = await User.findById(userId);
     const friend = await User.findById(friendId);

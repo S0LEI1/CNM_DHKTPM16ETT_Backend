@@ -20,7 +20,7 @@ const addFriendSchema = new Schema({
     },
     content:{
         type: String,
-        require: true
+        default:"Xin chào bạn."
     },
     status:{
         type:Boolean,
