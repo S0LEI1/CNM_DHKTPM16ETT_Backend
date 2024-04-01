@@ -51,7 +51,7 @@ app.use((error, req, res, next) => {
     "mongodb+srv://soleil:01636878201@cluster0.4x48u.mongodb.net/chatapp?retryWrites=true&w=majority&appName=Cluster0"
   )
   .then((result) => {
-    const server = app.listen(8080);
+    const server = app.listen(8000);
     const io = require("./socket").init(server);
     io.on("connection", (socket) => {
       console.log("Client connected");
