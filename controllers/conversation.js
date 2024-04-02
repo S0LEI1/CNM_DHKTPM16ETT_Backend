@@ -32,13 +32,13 @@ exports.getConversation = async (req, res, next) => {
   const conversationId = req.params.conversationId;
   // const userId = req.userId;
   // const user = await User.findById(userId);
-  const conversations = await Conversation.findById(conversationId);
+  const conversation = await Conversation.findById(conversationId).populate("participants",{_id:1, name:1, avatar:1, email:1}).exec();
   // sai
-  const messages = await Message.find({ _id: conversations.messages });
+  const messages = await Message.find({ _id: conversation.messages });
 
   res.status(201).json({
     message: "Success",
-    conversations: conversations,
+    conversation: conversation,
     messages: messages,
   });
 };
