@@ -12,9 +12,9 @@ exports.getConversations = async (req, res, next) => {
       return res.status(404).json({ message: "User not found" });
     }
     const conversations = await Conversation.find({
-      _id: { $in: user.conversations },
+      _id: { $in: user.conversations }
     })
-      .populate("participants")
+      .populate("participants",{_id:1, name:1, avatar:1, email:1})
       .exec();
     if (conversations.length <= 0) {
       return res.status(404).json({ message: "Conversations not found" });
