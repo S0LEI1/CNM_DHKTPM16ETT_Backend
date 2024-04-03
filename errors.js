@@ -13,3 +13,4 @@ exports.NAME_ERR ="Username must be 3 to 15 characters long, the first character
 exports.OTP_NOT_FOUND_ERR = "Otp not found";
 exports.OTP_EXPIRED_ERR = "Your Otp has been expired!"
 exports.CON_NOT_FOUND_ERR = "Oh uh. Nothing here..."
+exports.MGS_NOT_FOUND_ERR ="Oh uh. Nothing here, send something ..."
