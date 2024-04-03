@@ -12,3 +12,4 @@ exports.PASSWORD_ERR = "Password must contain one digit from 1 to 9, one lowerca
 exports.NAME_ERR ="Username must be 3 to 15 characters long, the first character must be an uppercase letter"
 exports.OTP_NOT_FOUND_ERR = "Otp not found";
 exports.OTP_EXPIRED_ERR = "Your Otp has been expired!"
+exports.CON_NOT_FOUND_ERR = "Oh uh. Nothing here..."

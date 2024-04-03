@@ -4,36 +4,21 @@ const User = require("../models/user");
 const Message = require("../models/message");
 const Conversation = require("../models/conversation");
 const { USER_NOT_FOUND_ERR } = require("../errors");
+const conversationServices = require("../services/conversation.service");
+const userService = require("../services/user.services");
 
 exports.getConversations = async (req, res, next) => {
   const userId = req.userId;
   try {
-    const user = await User.findById(userId);
+    const user = await userService.getUserById(userId);
     if (!user) {
       return res.status(404).json({ message: USER_NOT_FOUND_ERR });
     }
-    const conversations = await Conversation.find({
-      _id: { $in: user.conversations },
-    })
-      .populate({
-        path: "participants",
-        match: { _id: { $ne: userId } },
-        select: "name avatar phoneNumber email",
-      })
-      .populate({
-        path: "messages",
-        options: { limit: 1, sort: { createdAt: -1 } },
-        select: "content",
-      })
-      .exec();
-    if (conversations.length <= 0) {
+    const conversations = await conversationServices.getConversations(user);
+    if (!conversations) {
       return res.status(404).json({ message: "Conversations not found" });
     }
-
-    // if(!friend){
-    //   return res.status(404).json({message:"Friend not found"})
-    // }
-    res.status(200).json({ conversations: conversations });
+    res.status(200).json({ conversations: conversations, user: user });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
