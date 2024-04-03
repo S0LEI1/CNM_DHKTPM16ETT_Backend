@@ -39,22 +39,15 @@ exports.getConversation = async (req, res, next) => {
   if (!conversation) {
     return res.status(404).json({ message: CON_NOT_FOUND_ERR });
   }
-  const messages = await messageServices.getMessages(conversation.messages);
-  const userMessages = [];
-  const friendMessages = [];
-  for (let index = 0; index < messages.length; index++) {
-    if (messages[index].senderId.toString() === userId.toString()) {
-      userMessages.push(messages[index]);
-    } else friendMessages.push(messages[index]);
-  }
+  const messages = await messageServices.getMessages(conversation.messages, userId);
+  
   if (!messages) {
     return res.status(200).json({ message: MGS_NOT_FOUND_ERR });
   }
   res.status(201).json({
     message: "Success",
-    userId: userId,
-    userMessages: userMessages,
-    friendMessages: friendMessages,
+    userMessages: messages.userMessages,
+    friendMessages: messages.friendMessages,
   });
 };
 
