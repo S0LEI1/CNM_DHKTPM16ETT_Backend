@@ -16,6 +16,9 @@ const conversationSchema = new Schema(
         ref: "Message",
       },
     ],
+    owner:{
+      type: Schema.Types.ObjectId
+    }
   },
   { timeseries: true }
 );

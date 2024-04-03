@@ -3,22 +3,36 @@ const { validationResult } = require("express-validator");
 const User = require("../models/user");
 const Message = require("../models/message");
 const Conversation = require("../models/conversation");
+const { USER_NOT_FOUND_ERR } = require("../errors");
 
 exports.getConversations = async (req, res, next) => {
   const userId = req.userId;
   try {
     const user = await User.findById(userId);
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ message: USER_NOT_FOUND_ERR });
     }
     const conversations = await Conversation.find({
-      _id: { $in: user.conversations }
+      _id: { $in: user.conversations },
     })
-      .populate("participants",{_id:1, name:1, avatar:1, email:1})
+      .populate({
+        path: "participants",
+        match: { _id: { $ne: userId } },
+        select: "name avatar phoneNumber email",
+      })
+      .populate({
+        path: "messages",
+        options: { limit: 1, sort: { createdAt: -1 } },
+        select: "content",
+      })
       .exec();
     if (conversations.length <= 0) {
       return res.status(404).json({ message: "Conversations not found" });
     }
+
+    // if(!friend){
+    //   return res.status(404).json({message:"Friend not found"})
+    // }
     res.status(200).json({ conversations: conversations });
   } catch (error) {
     if (!error.statusCode) {
@@ -32,7 +46,9 @@ exports.getConversation = async (req, res, next) => {
   const conversationId = req.params.conversationId;
   // const userId = req.userId;
   // const user = await User.findById(userId);
-  const conversation = await Conversation.findById(conversationId).populate("participants",{_id:1, name:1, avatar:1, email:1}).exec();
+  const conversation = await Conversation.findById(conversationId)
+    .populate("participants", { _id: 1, name: 1, avatar: 1, email: 1 })
+    .exec();
   // sai
   const messages = await Message.find({ _id: conversation.messages });
 
