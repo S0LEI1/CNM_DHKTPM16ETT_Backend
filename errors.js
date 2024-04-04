@@ -19,3 +19,7 @@ exports.OTP_EXPIRED_ERR = "Your Otp has been expired!"
 
 exports.CON_NOT_FOUND_ERR = "Oh uh. Nothing here..."
 exports.MGS_NOT_FOUND_ERR ="Oh uh. Nothing here, send something ..."
+
+
+exports.CON_ERR = "Cannot create conversation"
+exports.SINGLE_CHAT_ERR = "Cannot create single chat"

@@ -8,11 +8,14 @@ const {
   CON_NOT_FOUND_ERR,
   MGS_NOT_FOUND_ERR,
   RECEIVER_NOT_FOUND_ERR,
+  CON_ERR,
+  SINGLE_CHAT_ERR,
 } = require("../errors");
 const conversationServices = require("../services/conversation.service");
 const userService = require("../services/user.services");
 const messageServices = require("../services/message.services");
 const { CREATE_CHAT } = require("../success");
+const singleChatServices = require("../services/single_chat.services");
 
 exports.getConversations = async (req, res, next) => {
   const userId = req.userId;
@@ -59,27 +62,19 @@ exports.createSingleConversation = async (req, res, next) => {
     const userId = req.userId;
     const user = await User.findById(userId);
     const receiverId = req.params.receiverId;
-    const messages = [];
     const receiver = await User.findById(receiverId);
     if (!receiver) {
       return res.status(404).json({ message: "Receiver not found." });
     }
-    const singleChat = new SingleChat();
-    singleChat.receriverId = receiver._id;
-    singleChat.messages = messages;
-    await singleChat.save();
-    
-    const conversation = new Conversation();
-    conversation.userId= user._id;
-    conversation.chatId = singleChat._id;
-    conversation.chatName = receiver.name;
-    conversation.avatar = receiver.avatar;
-    await conversation.save();
-    user.conversations.push(conversation._id);
-    receiver.conversations.push(conversation._id);
-    await user.save();
-    await receiver.save();
-    res.status(200).json({message:CREATE_CHAT});
+    const singleChat = await singleChatServices.createSingleChat(receiver);
+    if(!singleChat){
+      return res.staus(500).json({message:SINGLE_CHAT_ERR});
+    }
+    const conversation = await conversationServices.createSingleConversation(user, receiver);
+    if(!conversation){
+      return res.status(500).json({message:CON_ERR})
+    }
+    res.status(200).json({message:CREATE_CHAT, conversation});
   } catch (error) {
     console.log(error);
   }
