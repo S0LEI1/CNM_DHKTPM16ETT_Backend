@@ -5,6 +5,8 @@ const io = require("../socket");
 const User = require("../models/user");
 const Message = require("../models/message");
 const Conversation = require("../models/conversation");
+const SingleChat = require("../models/single_chat");
+const { SINGLE_CHAT_ERR } = require("../errors");
 
 exports.createMessage = async (req, res, next) => {
   const conversationId = req.params.conversationId;
@@ -22,6 +24,10 @@ exports.createMessage = async (req, res, next) => {
     if (!conversation) {
       return res.status(404).json({ message: "Conversation not found." });
     }
+    const singleChat = await SingleChat.findById(conversation.chatId);
+    if(!singleChat){
+      return res.status(404).json({message:SINGLE_CHAT_ERR});
+    }
     const message = new Message({
       senderId: senderId,
       senderName: user.name,
@@ -29,7 +35,9 @@ exports.createMessage = async (req, res, next) => {
       content: content,
     });
     await message.save();
-    conversation.messages.push(message);
+    singleChat.messages.push(message);
+    await singleChat.save();
+    conversation.lastMessages = message._id;
     await conversation.save();
     io.getIO().emit("message", {
       action: "create",
@@ -41,7 +49,7 @@ exports.createMessage = async (req, res, next) => {
     res.status(201).json({
       message: "Create message success!",
       message: message,
-      conversationId: conversationId,
+      singleChatId: singleChat._id,
     });
   } catch (error) {
     console.log(error);

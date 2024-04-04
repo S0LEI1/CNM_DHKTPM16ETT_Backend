@@ -24,7 +24,9 @@ exports.getConversations = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ message: USER_NOT_FOUND_ERR });
     }
-    const conversations = await Conversation.find({_id: {$in: user.conversations}})
+    const conversations = await Conversation.find({
+      _id: { $in: user.conversations },
+    });
     if (!conversations) {
       return res.status(404).json({ message: CON_NOT_FOUND_ERR });
     }
@@ -41,20 +43,32 @@ exports.getConversation = async (req, res, next) => {
   const conversationId = req.params.conversationId;
   const userId = req.userId;
   // const user = await User.findById(userId);
-  const conversation = await Conversation.findById(conversationId);
-  if (!conversation) {
-    return res.status(404).json({ message: CON_NOT_FOUND_ERR });
+  try {
+    const conversation = await Conversation.findById(conversationId);
+    if (!conversation) {
+      return res.status(404).json({ message: CON_NOT_FOUND_ERR });
+    }
+    const singleChat = await SingleChat.findById(conversation.chatId);
+
+    const messages = await messageServices.getMessages(
+      singleChat.messages,
+      userId
+    );
+
+    if (!messages) {
+      return res.status(200).json({ message: MGS_NOT_FOUND_ERR });
+    }
+    res.status(201).json({
+      message: "Success",
+      userMessages: messages.userMessages,
+      friendMessages: messages.friendMessages,
+    });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
   }
-  const messages = await messageServices.getMessages(conversation.messages, userId);
-  
-  if (!messages) {
-    return res.status(200).json({ message: MGS_NOT_FOUND_ERR });
-  }
-  res.status(201).json({
-    message: "Success",
-    userMessages: messages.userMessages,
-    friendMessages: messages.friendMessages,
-  });
 };
 
 exports.createSingleConversation = async (req, res, next) => {
@@ -67,14 +81,17 @@ exports.createSingleConversation = async (req, res, next) => {
       return res.status(404).json({ message: "Receiver not found." });
     }
     const singleChat = await singleChatServices.createSingleChat(receiver);
-    if(!singleChat){
-      return res.staus(500).json({message:SINGLE_CHAT_ERR});
+    if (!singleChat) {
+      return res.staus(500).json({ message: SINGLE_CHAT_ERR });
     }
-    const conversation = await conversationServices.createSingleConversation(user, receiver);
-    if(!conversation){
-      return res.status(500).json({message:CON_ERR})
+    const conversation = await conversationServices.createSingleConversation(
+      user,
+      receiver
+    );
+    if (!conversation) {
+      return res.status(500).json({ message: CON_ERR });
     }
-    res.status(200).json({message:CREATE_CHAT, conversation});
+    res.status(200).json({ message: CREATE_CHAT, conversation });
   } catch (error) {
     console.log(error);
   }

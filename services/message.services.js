@@ -4,7 +4,7 @@ const messageServices = {
   getMessages: async (messagesId, userId) => {
     const messages = await Message.find(
       { _id: messagesId },
-      { _id: 1, content: 1, senderId: 1, senderName: 1 }
+      { _id: 1, content: 1, senderId: 1, senderName: 1, createdAt:1, updatedAt:1 }
     );
     const userMessages = [];
     const friendMessages = [];
