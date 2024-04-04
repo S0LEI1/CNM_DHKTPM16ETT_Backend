@@ -1,8 +1,9 @@
 const Conversation = require("../models/conversation");
+const Message = require("../models/message")
 const conversationServices = {
   getConversations: async (user) => {
     try {
-      return await Conversation.find({
+       const conversations =  await Conversation.find({
         _id: { $in: user.conversations },
       })
         .populate({
@@ -10,12 +11,8 @@ const conversationServices = {
           match: { _id: { $ne: user._id } },
           select: "name avatar phoneNumber email",
         })
-        .populate({
-          path: "messages",
-          options: { limit: 1, sort: { createdAt: -1 } },
-          select: "content",
-        })
         .exec();
+        return conversations;
     } catch (error) {
       throw error;
     }

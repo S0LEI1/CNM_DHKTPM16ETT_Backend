@@ -2,6 +2,9 @@
 exports.SERVER_ERR = "Something went wrong";
 exports.USER_NOT_FOUND_ERR = "User not found";
 exports.USER_EXIST_ERR = "User not found";
+exports.RECEIVER_NOT_FOUND_ERR = "Reciver not found";
+
+
 exports.EMAIL_INVALID_ERR = "Email invalid";
 exports.EMAIL_EXIST_ERR = "Email ready exist";
 exports.PHONE_INVALID_ERR = "Phone number invalid"
@@ -12,5 +15,7 @@ exports.PASSWORD_ERR = "Password must contain one digit from 1 to 9, one lowerca
 exports.NAME_ERR ="Username must be 3 to 15 characters long, the first character must be an uppercase letter"
 exports.OTP_NOT_FOUND_ERR = "Otp not found";
 exports.OTP_EXPIRED_ERR = "Your Otp has been expired!"
+
+
 exports.CON_NOT_FOUND_ERR = "Oh uh. Nothing here..."
 exports.MGS_NOT_FOUND_ERR ="Oh uh. Nothing here, send something ..."

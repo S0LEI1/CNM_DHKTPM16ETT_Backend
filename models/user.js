@@ -40,6 +40,11 @@ const userSchema = new Schema(
         ref: "AddFriend",
       },
     ],
+    role :{
+      type : String,
+      enum:["ADMIN","USER"],
+      default:"USER",
+     },
   },
   { timestamps: true }
 );

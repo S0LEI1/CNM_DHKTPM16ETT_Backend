@@ -2,14 +2,17 @@ const mongoose = require("mongoose");
 const User = require("../models/user");
 const Message = require("../models/message");
 const Conversation = require("../models/conversation");
+const SingleChat = require("../models/single_chat");
 const {
   USER_NOT_FOUND_ERR,
   CON_NOT_FOUND_ERR,
   MGS_NOT_FOUND_ERR,
+  RECEIVER_NOT_FOUND_ERR,
 } = require("../errors");
 const conversationServices = require("../services/conversation.service");
 const userService = require("../services/user.services");
 const messageServices = require("../services/message.services");
+const { CREATE_CHAT } = require("../success");
 
 exports.getConversations = async (req, res, next) => {
   const userId = req.userId;
@@ -18,7 +21,7 @@ exports.getConversations = async (req, res, next) => {
     if (!user) {
       return res.status(404).json({ message: USER_NOT_FOUND_ERR });
     }
-    const conversations = await conversationServices.getConversations(user);
+    const conversations = await Conversation.find({_id: {$in: user.conversations}})
     if (!conversations) {
       return res.status(404).json({ message: CON_NOT_FOUND_ERR });
     }
@@ -54,26 +57,29 @@ exports.getConversation = async (req, res, next) => {
 exports.createSingleConversation = async (req, res, next) => {
   try {
     const userId = req.userId;
+    const user = await User.findById(userId);
     const receiverId = req.params.receiverId;
     const messages = [];
-    const user = await User.findById(userId);
     const receiver = await User.findById(receiverId);
     if (!receiver) {
       return res.status(404).json({ message: "Receiver not found." });
     }
-    const singleCons = new Conversation({
-      participants: [userId, receiverId],
-      messages: messages,
-    });
-    await singleCons.save();
-    user.conversations.push(singleCons);
-    receiver.conversations.push(singleCons);
+    const singleChat = new SingleChat();
+    singleChat.receriverId = receiver._id;
+    singleChat.messages = messages;
+    await singleChat.save();
+    
+    const conversation = new Conversation();
+    conversation.userId= user._id;
+    conversation.chatId = singleChat._id;
+    conversation.chatName = receiver.name;
+    conversation.avatar = receiver.avatar;
+    await conversation.save();
+    user.conversations.push(conversation._id);
+    receiver.conversations.push(conversation._id);
     await user.save();
     await receiver.save();
-    res.status(201).json({
-      message: "Creaate single conversation success .",
-      conversationId: singleCons.id,
-    });
+    res.status(200).json({message:CREATE_CHAT});
   } catch (error) {
     console.log(error);
   }

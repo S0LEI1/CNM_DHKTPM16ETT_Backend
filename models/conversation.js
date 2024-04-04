@@ -2,23 +2,33 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const conversationSchema = new Schema(
   {
-    participants: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        require: true,
-      },
-    ],
-    messages: [
-      {
-        type: Schema.Types.ObjectId,
-        require: true,
-        ref: "Message",
-      },
-    ],
-    owner:{
-      type: Schema.Types.ObjectId
-    }
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref:"User",
+      require: true,
+    },
+    chatId: {
+      type: Schema.Types.ObjectId,
+      ref:"SingleChat",
+      ref:"GroupChat",
+      require: true,
+    },
+    chatName: {
+      type: String,
+      require: true,
+    },
+    avatar:{
+      type: String
+    },
+    lastMessages: {
+      type: Schema.Types.ObjectId,
+      ref: "Message",
+    },
+    type: {
+      type: String,
+      enum: ["SINGLE", "GROUP"],
+      default: "SINGLE",
+    },
   },
   { timeseries: true }
 );

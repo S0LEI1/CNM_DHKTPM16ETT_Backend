@@ -1,0 +1,1 @@
+exports.CREATE_CHAT = "Create chat success";
