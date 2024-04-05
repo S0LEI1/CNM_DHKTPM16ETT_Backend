@@ -34,14 +34,14 @@ const messageServices = {
       { _id: messagesId },
       { _id: 1, content: 1, senderId: 1, senderName: 1, createdAt:1, updatedAt:1 }
     );
-    const userMessages = [];
-    const friendMessages = [];
-    for (let index = 0; index < messages.length; index++) {
-      if (messages[index].senderId.toString() === userId.toString()) {
-        userMessages.push(messages[index]);
-      } else friendMessages.push(messages[index]);
-    }
-    return {userMessages, friendMessages};
+    // const userMessages = [];
+    // const friendMessages = [];
+    // for (let index = 0; index < messages.length; index++) {
+    //   if (messages[index].senderId.toString() === userId.toString()) {
+    //     userMessages.push(messages[index]);
+    //   } else friendMessages.push(messages[index]);
+    // }
+    return messages;
   },
   fileMessage: async (folderName,file) =>{
     if(IMAGE_TYPE_MATCH.indexOf(file.mimetype) ===1){

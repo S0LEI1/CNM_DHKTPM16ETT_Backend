@@ -60,8 +60,7 @@ exports.getConversation = async (req, res, next) => {
     }
     res.status(201).json({
       message: "Success",
-      userMessages: messages.userMessages,
-      friendMessages: messages.friendMessages,
+      messages
     });
   } catch (error) {
     if (!error.statusCode) {
