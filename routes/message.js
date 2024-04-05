@@ -5,7 +5,7 @@ const isAuth = require("../middleware/is-auth");
 const messageController = require("../controllers/message");
 
 
-router.put('/createMessage/:conversationId',isAuth, messageController.createMessage);
+router.put('/createMessage/:conversationId',isAuth, messageController.createTextMessage);
 
 
 module.exports = router;

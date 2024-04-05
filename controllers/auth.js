@@ -5,12 +5,19 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const OtpModel = require("../models/otp");
 
-const { updateAvatar } = require("../services/upload_file");
+const {uploadFile } = require("../services/upload_file");
 const { USER_NOT_FOUND_ERR, PASSWORD_NOT_MATCH_ERR, OTP_NOT_FOUND_ERR, OTP_EXPIRED_ERR } = require("../errors");
 const authService = require("../services/auth.service");
 const validate = require("../utils/validate")
 const userService = require("../services/user.services");
 
+const type ={
+  "USERS":"users",
+  "CONVERSATIONS":"conversations",
+}
+const fileType = {
+  "AVATAR":"avatar"
+}
 exports.signup = async (req, res, next) => {
   const { email, phoneNumber, password, name } = req.body;
   const errors =  await validate.signup(req.body);
@@ -111,7 +118,12 @@ exports.updateAvatar = async (req, res) => {
     if (!image) {
       return res.status(500).json({ message: "No image" });
     }
-    const imageUrl = await updateAvatar(image);
+    const error = validate.avatar(image);
+    if(error){
+      return res.status(500).json({ message: "Validate fail", error: error });
+    }
+    const folderName = user._id;
+    const imageUrl = await uploadFile(type.USERS, folderName,fileType.AVATAR, image);
     const filter = { _id: userId };
     const update = { avatar: imageUrl };
     const updateUser = await User.findOneAndUpdate(filter, update, {

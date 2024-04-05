@@ -1,5 +1,33 @@
 const Message = require("../models/message");
-
+const { uploadFile } = require("./upload_file");
+const IMAGE_TYPE_MATCH = [
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "image/gif",
+];
+const FILE_TYPE_MATCH = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "application/vnd.rar",
+  "application/zip",
+];
+const VIDEO_TYPE_MATCH = [
+  "video/mp3",
+  "video/mp4",
+];
+const type ={
+  "USERS":"users",
+  "CONVERSATIONS":"conversations",
+}
+const fileType = {
+  "IMAGE":"image",
+  "FILE":"file",
+  "VIDEO":"video"
+}
 const messageServices = {
   getMessages: async (messagesId, userId) => {
     const messages = await Message.find(
@@ -15,5 +43,15 @@ const messageServices = {
     }
     return {userMessages, friendMessages};
   },
+  fileMessage: async (folderName,file) =>{
+    if(IMAGE_TYPE_MATCH.indexOf(file.mimetype) ===1){
+      return await uploadFile(type.CONVERSATIONS,folderName,fileType.IMAGE, file);
+    }else if(FILE_TYPE_MATCH.indexOf(file) === 1){
+      return await  uploadFile(type.CONVERSATIONS,folderName,fileType.FILE, file);
+    }else if(VIDEO_TYPE_MATCH.indexOf(file) === 1){
+      return await  uploadFile(type.CONVERSATIONS,folderName,fileType.VIDEO, file);
+    }else 
+      return null;
+  }
 };
 module.exports = messageServices;

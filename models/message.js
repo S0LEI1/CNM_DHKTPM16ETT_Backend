@@ -11,6 +11,11 @@ const messageSchema = new Schema(
       type: String,
       require: true,
     },
+    type:{
+      type: String,
+      enum:["TEXT","FILE","LINK"],
+      default: "TEXT"
+    },
     view: {
       inbox: Boolean,
       outbox: Boolean,
