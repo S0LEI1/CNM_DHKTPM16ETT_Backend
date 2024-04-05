@@ -5,7 +5,7 @@ const isAuth = require("../middleware/is-auth");
 const messageController = require("../controllers/message");
 
 
-router.put('/createMessage/:conversationId',isAuth, messageController.createTextMessage);
-
+router.post('/text/:conversationId',isAuth, messageController.createTextMessage);
+router.post("/file/:conversationId", isAuth, messageController.createFileMessage);
 
 module.exports = router;

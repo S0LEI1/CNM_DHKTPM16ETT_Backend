@@ -9,5 +9,5 @@ router.get("/", isAuth, conversationController.getConversations);
 router.get('/:conversationId',isAuth, conversationController.getConversation);
 // /conversation/id
 router.post('/:receiverId', isAuth, conversationController.createSingleConversation);
-
+// /conversation/conversationId
 module.exports = router;
