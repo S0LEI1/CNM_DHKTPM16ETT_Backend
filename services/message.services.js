@@ -21,7 +21,7 @@ const fileType = {
   VIDEO: "video",
 };
 const messageServices = {
-  getMessages: async (messagesId, userId) => {
+  getMessages: async (messagesId) => {
     const messages = await Message.find(
       { _id: messagesId },
       {

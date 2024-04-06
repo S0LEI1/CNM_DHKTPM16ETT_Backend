@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const groupChatSchema = new Schema(
   {
+    conversationId:{
+      type: Schema.Types.ObjectId,
+      ref:"Conversation",
+      require:true
+    },
     participants: [
       {
         type: Schema.Types.ObjectId,

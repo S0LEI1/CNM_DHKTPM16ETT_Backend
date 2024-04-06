@@ -2,7 +2,12 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const singleChatSchema = new Schema(
   {
-    receriverId: {
+    conversationId:{
+      type: Schema.Types.ObjectId,
+      ref:"Conversation",
+      require:true
+    },
+    receiverId: {
       type: Schema.Types.ObjectId,
       ref:"User",
       require: true,

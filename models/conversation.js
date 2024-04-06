@@ -7,12 +7,6 @@ const conversationSchema = new Schema(
       ref:"User",
       require: true,
     },
-    chatId: {
-      type: Schema.Types.ObjectId,
-      ref:"SingleChat",
-      ref:"GroupChat",
-      require: true,
-    },
     chatName: {
       type: String,
       require: true,

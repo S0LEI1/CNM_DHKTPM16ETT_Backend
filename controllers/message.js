@@ -34,8 +34,8 @@ exports.createTextMessage = async (req, res, next) => {
     if (!conversation) {
       return res.status(404).json({ message: "Conversation not found." });
     }
-    const singleChat = await SingleChat.findById(conversation.chatId);
-    const groupChat = await GroupChat.findById(conversation.chatId);
+    const singleChat = await SingleChat.findOne({conversationId: conversation._id});
+    const groupChat = await GroupChat.findOne({conversationId: conversation._id});
     if (!singleChat && !groupChat) {
       return res.status(404).json({ message: SINGLE_CHAT_ERR });
     }

@@ -1,10 +1,10 @@
 const SingleChat = require("../models/single_chat");
 const singleChatServices = {
-  createSingleChat: async (receiver) => {
-    const singleChat = new SingleChat();
-    const messages = [];
-    singleChat.receriverId = receiver._id;
-    singleChat.messages = messages;
+  createSingleChat: async (conversationId, receiverId) => {
+    const singleChat = new SingleChat({
+      conversationId: conversationId,
+      receiverId: receiverId,
+    });
     await singleChat.save();
     return singleChat;
   },

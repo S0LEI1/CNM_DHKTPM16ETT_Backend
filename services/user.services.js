@@ -16,6 +16,17 @@ const userService = {
       throw error;
     }
   },
+  removeConversation: async (userId,consId) =>{
+    try {
+      return await User.findOneAndUpdate(
+        {_id: userId},
+        {$pull:{conversations:{_id: consId}}},
+        { safe: true, multi: false }
+      )
+    } catch (error) {
+      throw error;
+    } 
+  }
 };
 
 module.exports = userService;

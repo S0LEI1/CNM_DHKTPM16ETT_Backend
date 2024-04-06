@@ -10,4 +10,6 @@ router.get('/:conversationId',isAuth, conversationController.getConversation);
 // /conversation/id
 router.post('/:receiverId', isAuth, conversationController.createSingleConversation);
 // /conversation/conversationId
+
+router.delete("/:conversationId", isAuth, conversationController.deleteConversation);
 module.exports = router;
