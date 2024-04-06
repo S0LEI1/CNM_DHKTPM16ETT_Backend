@@ -53,24 +53,27 @@ exports.getConversation = async (req, res, next) => {
     }
     var chat;
     if(conversation.type ==="SINGLE"){
-      chat = await SingleChat.findOne(conversation._id);
+      chat = await SingleChat.findOne({conversationId: conversationId}).populate("messages").exec();
     }else if(conversation.type ==="GROUP"){
-      chat = await GroupChat.findById(conversation._id);
+      chat = await GroupChat.findOne({conversationId: conversationId}).populate("messages").exec();
+    }else{
+      return res.status(500).json({message:"An error"})
     }
+    // const messages = await Message.find({_id: {$in: chat.messages}})
 
-    const messages = await Message.find({_id: {$in: chat.messages}})
-
-    if (messages.length <= 0) {
-      return res.status(200).json({ message: MGS_NOT_FOUND_ERR });
-    }
+    // if (messages.length <= 0) {
+    //   return res.status(200).json({ message: MGS_NOT_FOUND_ERR });
+    // }
     // const receiver = await User.findById(singleChat.receriverId);
     // if (!receiver) {
     //   return res.status(404).json({ message: RECEIVER_NOT_FOUND_ERR });
     // }
     res.status(201).json({
       message: "Success",
+      conversation,
       // avatar: receiver.avatar,
-      messages,
+      // messages,
+      chat
     });
   } catch (error) {
     if (!error.statusCode) {
