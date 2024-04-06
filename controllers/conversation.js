@@ -3,6 +3,7 @@ const User = require("../models/user");
 const Message = require("../models/message");
 const Conversation = require("../models/conversation");
 const SingleChat = require("../models/single_chat");
+const GroupChat = require("../models/group_chat");
 const {
   USER_NOT_FOUND_ERR,
   CON_NOT_FOUND_ERR,
@@ -16,6 +17,7 @@ const userService = require("../services/user.services");
 const messageServices = require("../services/message.services");
 const { CREATE_CHAT } = require("../success");
 const singleChatServices = require("../services/single_chat.services");
+const { avatar } = require("../utils/validate");
 
 exports.getConversations = async (req, res, next) => {
   const userId = req.userId;
@@ -49,18 +51,25 @@ exports.getConversation = async (req, res, next) => {
       return res.status(404).json({ message: CON_NOT_FOUND_ERR });
     }
     const singleChat = await SingleChat.findById(conversation.chatId);
+    const groupChat = await GroupChat.findById(conversation.chatId);
+    var messages = [];
+    if (singleChat) {
+      messages = await messageServices.getMessages(singleChat.messages, userId);
+    } else if (groupChat) {
+      messages = await messageServices.getMessages(groupChat.messages, userId);
+    }
 
-    const messages = await messageServices.getMessages(
-      singleChat.messages,
-      userId
-    );
-
-    if (!messages) {
+    if (messages.length <= 0) {
       return res.status(200).json({ message: MGS_NOT_FOUND_ERR });
+    }
+    const receiver = await User.findById(singleChat.receriverId);
+    if (!receiver) {
+      return res.status(404).json({ message: RECEIVER_NOT_FOUND_ERR });
     }
     res.status(201).json({
       message: "Success",
-      messages
+      avatar: receiver.avatar,
+      messages,
     });
   } catch (error) {
     if (!error.statusCode) {
