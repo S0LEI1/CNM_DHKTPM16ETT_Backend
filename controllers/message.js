@@ -24,9 +24,9 @@ exports.createTextMessage = async (req, res, next) => {
   const senderId = req.userId;
   //   const receiverId = req.params.receiverId;
   const content = req.body.content;
-  const user = await User.findById(senderId);
   const file = req.file;
   try {
+    const user = await User.findById(senderId);
     const conversation = await Conversation.findById(conversationId);
     if (!conversation) {
       return res.status(404).json({ message: "Conversation not found." });
@@ -49,8 +49,15 @@ exports.createTextMessage = async (req, res, next) => {
         senderName: user.name,
         content: content,
         fileUrl: fileUrl,
+        type: "TEXTANDFILE",
       });
     } else {
+      const errors = validate.content(content);
+      if (errors) {
+        return res
+          .status(500)
+          .json({ message: "Validate error", errors: errors });
+      }
       message = new Message({
         senderId: senderId,
         senderName: user.name,

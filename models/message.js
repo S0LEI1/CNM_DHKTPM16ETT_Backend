@@ -13,7 +13,7 @@ const messageSchema = new Schema(
     },
     type:{
       type: String,
-      enum:["TEXT","FILE","LINK"],
+      enum:["TEXT","FILE","LINK","TEXTANDFILE","TEXTANDLINK"],
       default: "TEXT"
     },
     view: {

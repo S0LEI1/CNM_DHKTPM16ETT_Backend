@@ -32,11 +32,11 @@ const FILE_TYPE_MATCH = [
   "application/zip",
 ];
 const AVATAR_TYPE_MATCH = ["image/png", "image/jpeg", "image/jpg", "image/gif"];
-const errors = [];
+
 const validate = {
   signup: async (payload) => {
     const { email, phoneNumber, password, confirmPassword, name } = payload;
-
+    const errors = [];
     const user = await User.findOne({
       $or: [{ phoneNumber: phoneNumber }, { email: email }],
     });
@@ -73,7 +73,7 @@ const validate = {
   },
   login: (payload) => {
     const { phoneNumber, password } = payload;
-
+    const errors = [];
     if (!validator.isMobilePhone(phoneNumber)) {
       errors.push(PHONE_INVALID_ERR);
     }
@@ -90,7 +90,7 @@ const validate = {
   },
   password: (payload) => {
     const { password, confirmPassword } = payload;
-
+    const errors = [];
     if (!REGEX_PASSWORD.test(password)) {
       errors.push(PASSWORD_ERR);
     }
@@ -104,7 +104,7 @@ const validate = {
   },
   name: (payload) => {
     const { name } = payload;
-
+    const errors = [];
     if (
       !validator.isLength(name, { min: 2, max: 20 }) &&
       !REGEX_VN_CHARECTER.test(name)
@@ -133,6 +133,7 @@ const validate = {
     }
   },
   avatar: (file) => {
+    const errors = [];
     if (FILE_TYPE_MATCH.indexOf(file.mimetype) === -1) {
       errors.push(`${file?.originalname} is invalid`);
     }
@@ -140,10 +141,22 @@ const validate = {
     return null;
   },
   file: (file) => {
+    const errors = [];
     if (FILE_TYPE_MATCH.indexOf(file.mimetype) === -1) {
       errors.push(`${file?.originalname} is invalid`);
     }
     if (errors?.length > 0) return errors;
+    return null;
+  },
+  content: (content) =>{
+    const errors = [];
+    const trimContent = validator.trim(content);
+    if(!validator.isLength(trimContent,{min:1})){
+      errors.push("Content not null");
+    }
+    if(errors?.length > 0){
+      return errors;
+    }
     return null;
   }
 };
