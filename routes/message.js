@@ -7,5 +7,5 @@ const messageController = require("../controllers/message");
 
 router.post('/text/:conversationId',isAuth, messageController.createTextMessage);
 router.post("/file/:conversationId", isAuth, messageController.createFileMessage);
-
+router.delete("/delete/:messageId", isAuth, messageController.deleteMessage);
 module.exports = router;

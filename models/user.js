@@ -45,6 +45,7 @@ const userSchema = new Schema(
       enum:["ADMIN","USER"],
       default:"USER",
      },
+     otp
   },
   { timestamps: true }
 );

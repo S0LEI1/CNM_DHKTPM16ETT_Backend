@@ -31,6 +31,16 @@ const conversationServices = {
       throw error;
     }
   },
+  updateLastMessage: async (conversationId,message) =>{
+    try {
+      Conversation.updateOne(
+        { _id: conversationId }, 
+        {$set: { lastMessages: message }}, {upsert: true}
+    );
+    } catch (error) {
+      throw error;
+    }
+  }
 };
 
 module.exports = conversationServices;

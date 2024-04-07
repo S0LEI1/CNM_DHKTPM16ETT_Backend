@@ -1,5 +1,5 @@
 const Message = require("../models/message");
-const { uploadFile } = require("./upload_file");
+const { uploadFileToS3 } = require("./upload_file");
 const IMAGE_TYPE_MATCH = ["image/png", "image/jpeg", "image/jpg", "image/gif"];
 const FILE_TYPE_MATCH = [
   "application/pdf",
@@ -42,9 +42,9 @@ const messageServices = {
     // }
     return messages;
   },
-  fileMessage: async (folderName, file) => {
+  uploadFile: async (folderName, file) => {
     if (IMAGE_TYPE_MATCH.indexOf(file.mimetype)) {
-      return await uploadFile(
+      return await uploadFileToS3(
         type.CONVERSATIONS,
         folderName,
         fileType.IMAGE,
@@ -52,7 +52,7 @@ const messageServices = {
       );
     }
     if (FILE_TYPE_MATCH.indexOf(file.mimetype)) {
-      return await uploadFile(
+      return await uploadFileToS3(
         type.CONVERSATIONS,
         folderName,
         fileType.FILE,
@@ -60,7 +60,7 @@ const messageServices = {
       );
     }
     if (VIDEO_TYPE_MATCH.indexOf(file.mimetype)) {
-      return await uploadFile(
+      return await uploadFileToS3(
         type.CONVERSATIONS,
         folderName,
         fileType.VIDEO,
@@ -71,5 +71,8 @@ const messageServices = {
       return null;
     }
   },
+  createMessage: () =>{
+
+  }
 };
 module.exports = messageServices;

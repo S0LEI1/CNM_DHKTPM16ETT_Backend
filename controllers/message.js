@@ -7,10 +7,17 @@ const Message = require("../models/message");
 const Conversation = require("../models/conversation");
 const SingleChat = require("../models/single_chat");
 const GroupChat = require("../models/group_chat");
-const { SINGLE_CHAT_ERR } = require("../errors");
+const {
+  SINGLE_CHAT_ERR,
+  USER_NOT_FOUND_ERR,
+  CON_NOT_FOUND_ERR,
+} = require("../errors");
 const messageServices = require("../services/message.services");
 const validate = require("../utils/validate");
 const { uploadFile } = require("../services/upload_file");
+const singleChatServices = require("../services/single_chat.services");
+const groupChatServices = require("../services/group_chat.services");
+const conversationServices = require("../services/conversation.service");
 const type = {
   USERS: "users",
   CONVERSATIONS: "conversations",
@@ -43,7 +50,7 @@ exports.createTextMessage = async (req, res, next) => {
     var message;
     if (file) {
       const folderName = user._id;
-      const fileUrl = await messageServices.fileMessage(folderName, file);
+      const fileUrl = await messageServices.uploadFile(folderName, file);
       message = new Message({
         senderId: senderId,
         senderName: user.name,
@@ -67,11 +74,9 @@ exports.createTextMessage = async (req, res, next) => {
     }
     await message.save();
     if (singleChat) {
-      singleChat.messages.push(message);
-      await singleChat.save();
+      await singleChatServices.updateMessages(singleChat._id, message);
     } else {
-      groupChat.messages.push(message);
-      await groupChat.save();
+      await groupChatServices.updateMessages(groupChat._id, message);
     }
     conversation.lastMessages = message._id;
     await conversation.save();
@@ -137,8 +142,9 @@ exports.createFileMessage = async (req, res, next) => {
       groupChat.messages.push(message);
       await groupChat.save();
     }
-    conversation.lastMessages = message._id;
-    await conversation.save();
+    // conversation.lastMessages = message._id;
+    // await conversation.save();
+    await conversationServices.updateLastMessage(conversation._id, message);
     io.getIO().emit("message", {
       action: "create",
       message: {
@@ -154,4 +160,35 @@ exports.createFileMessage = async (req, res, next) => {
   } catch (error) {
     console.log(error);
   }
+};
+exports.deleteMessage = async (req, res, next) => {
+  const messageId = req.params.messageId;
+  const chatId = req.body.chatId;
+  try {
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ message: "Message not found" });
+    }
+    await message.deleteOne();
+    const singChat = await SingleChat.findById(chatId);
+    const groupChat = await GroupChat.findById(chatId);
+    if(!singChat && !groupChat)
+      return res.status(404).json({message:CON_NOT_FOUND_ERR});
+
+    if (singChat) {
+      await singleChatServices.removeMessage(chatId, message._id);
+      await singChat.save();
+      return res
+        .status(200)
+        .json({ message: "Delete success", message, singChat });
+    } else if (groupChat) {
+      await groupChatServices.removeMessage(chatId, message._id);
+      await groupChat.save();
+      return res
+        .status(200)
+        .json({ message: "Delete success", message, groupChat });
+    } else {
+      return res.status(500).json({ message: "Type not valid" });
+    }
+  } catch (error) {}
 };

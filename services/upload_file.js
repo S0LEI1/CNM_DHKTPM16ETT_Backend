@@ -20,7 +20,7 @@ const FILE_TYPE = [
   "application/zip",
 ];
 
-const uploadFile = async (type, folderName, fileType, file) => {
+const uploadFileToS3 = async (type, folderName, fileType, file) => {
   const filePath = `${new Date().getTime()}-${file?.originalname}`;
   const params = {
     Bucket: process.env.BUCKET_NAME,
@@ -36,4 +36,4 @@ const uploadFile = async (type, folderName, fileType, file) => {
     console.log("Upload file to S3 fail", error);
   }
 };
-module.exports = { uploadFile};
+module.exports = { uploadFileToS3};

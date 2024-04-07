@@ -48,7 +48,7 @@ app.use((error, req, res, next) => {
 
   mongoose
   .connect(
-    "mongodb+srv://soleil:01636878201@cluster0.4x48u.mongodb.net/chatapp?retryWrites=true&w=majority&appName=Cluster0"
+    "mongodb+srv://soleil:01636878201@cluster0.4x48u.mongodb.net/chatapp2?retryWrites=true&w=majority&appName=Cluster0"
   )
   .then((result) => {
     const server = app.listen(8000);

@@ -8,5 +8,25 @@ const singleChatServices = {
     await singleChat.save();
     return singleChat;
   },
+  removeMessage: async (chatId,messageId) => {
+    try {
+      return await SingleChat.findOneAndUpdate(
+        { _id: chatId },
+        { $pull: { messages: messageId } },
+        { safe: true, multi: false }
+      );
+    } catch (error) {
+      throw error;
+    }
+  },
+  updateMessages: async (chatId,message) =>{
+    try {
+      return await SingleChat.updateOne(
+        { _id: chatId }, 
+        { $push: { messages: message } })
+    } catch (error) {
+      throw error;
+    }
+  }
 };
 module.exports = singleChatServices;

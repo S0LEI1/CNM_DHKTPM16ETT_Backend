@@ -16,7 +16,7 @@ const conversationServices = require("../services/conversation.service");
 const userService = require("../services/user.services");
 const messageServices = require("../services/message.services");
 const { CREATE_CHAT, DELETE_CHAT } = require("../success");
-const singleChatServices = require("../services/single_chat.services");
+const singChatServices = require("../services/single_chat.services");
 const { avatar } = require("../utils/validate");
 
 exports.getConversations = async (req, res, next) => {
@@ -94,7 +94,7 @@ exports.createSingleConversation = async (req, res, next) => {
       return res.status(404).json({ message: "Receiver not found." });
     }
     const conversation = await conversationServices.createConversation(userId, receiver.name, receiver.avatar);
-    const singleChat = await singleChatServices.createSingleChat(conversation._id, receiver._id);
+    const singleChat = await singChatServices.createSingleChat(conversation._id, receiver._id);
     if (!conversation) {
       return res.status(500).json({ message: CON_ERR });
     }
@@ -123,26 +123,8 @@ exports.deleteConversation = async (req, res, next) => {
     if (!cons) {
       return res.status(404).json({ message: CON_NOT_FOUND_ERR });
     }
-    const singleChat = await SingleChat.findById(cons.chatId);
-    console.log(singleChat);
-    const groupChat = await GroupChat.findById(cons.chatId);
-    if (!singleChat && !groupChat) {
-      return res.status(404).json({ messge: SINGLE_CHAT_ERR });
-    }
-    if (singleChat) {
-      await Message.deleteMany({ _id: { $in: singleChat.messages } });
-      user.conversations.filter(con => con._id != conversationId)
-      await user.save();
-      await singleChat.deleteOne();
-    } else if (groupChat) {
-      await Message.deleteMany({ _id: { $in: groupChat.messages } });
-      await groupChat.deleteOne();
-      await userService.removeConversation(userId, conversationId);
-    } else {
-      return res.status(500).json({ messge: "An error has occurred" });
-    }
-    // await userService.removeConversation(userId);
-    await cons.deleteOne();
+    await userService.removeConversation(user._id, cons._id);
+    await user.save();
     res.status(200).json({ message: DELETE_CHAT });
   } catch (error) {
     if (!error.statusCode) {
