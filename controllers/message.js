@@ -10,6 +10,7 @@ const GroupChat = require("../models/group_chat");
 const { SINGLE_CHAT_ERR } = require("../errors");
 const messageServices = require("../services/message.services");
 const validate = require("../utils/validate");
+const { uploadFile } = require("../services/upload_file");
 const type = {
   USERS: "users",
   CONVERSATIONS: "conversations",
@@ -24,27 +25,39 @@ exports.createTextMessage = async (req, res, next) => {
   //   const receiverId = req.params.receiverId;
   const content = req.body.content;
   const user = await User.findById(senderId);
-  //   const view = {
-  //     inbox: false,
-  //     outbox: true,
-  //     archive: false,
-  //   };
+  const file = req.file;
   try {
     const conversation = await Conversation.findById(conversationId);
     if (!conversation) {
       return res.status(404).json({ message: "Conversation not found." });
     }
-    const singleChat = await SingleChat.findOne({conversationId: conversation._id});
-    const groupChat = await GroupChat.findOne({conversationId: conversation._id});
+    const singleChat = await SingleChat.findOne({
+      conversationId: conversation._id,
+    });
+    const groupChat = await GroupChat.findOne({
+      conversationId: conversation._id,
+    });
     if (!singleChat && !groupChat) {
       return res.status(404).json({ message: SINGLE_CHAT_ERR });
     }
-    const message = new Message({
-      senderId: senderId,
-      senderName: user.name,
-      //   view: view,
-      content: content,
-    });
+    var message;
+    if (file) {
+      const folderName = user._id;
+      const fileUrl = await messageServices.fileMessage(folderName, file);
+      message = new Message({
+        senderId: senderId,
+        senderName: user.name,
+        content: content,
+        fileUrl: fileUrl,
+      });
+    } else {
+      message = new Message({
+        senderId: senderId,
+        senderName: user.name,
+        //   view: view,
+        content: content,
+      });
+    }
     await message.save();
     if (singleChat) {
       singleChat.messages.push(message);
@@ -101,12 +114,12 @@ exports.createFileMessage = async (req, res, next) => {
       return res.status(500).json({ message: "Validate fail", error: error });
     }
     const folderName = user._id;
-    const fileImage = await messageServices.fileMessage(folderName, file);
+    const fileUrl = await messageServices.fileMessage(folderName, file);
     const message = new Message({
       senderId: senderId,
       senderName: user.name,
       //   view: view,
-      content: fileImage,
+      content: fileUrl,
       type: "FILE",
     });
     await message.save();
