@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/user");
 const OtpModel = require("../models/otp");
 
-const {uploadFile } = require("../services/upload_file");
+const {uploadFile, uploadFileToS3 } = require("../services/upload_file");
 const { USER_NOT_FOUND_ERR, PASSWORD_NOT_MATCH_ERR, OTP_NOT_FOUND_ERR, OTP_EXPIRED_ERR } = require("../errors");
 const authService = require("../services/auth.service");
 const validate = require("../utils/validate")
@@ -123,7 +123,7 @@ exports.updateAvatar = async (req, res) => {
       return res.status(500).json({ message: "Validate fail", error: error });
     }
     const folderName = user._id;
-    const imageUrl = await uploadFile(type.USERS, folderName,fileType.AVATAR, image);
+    const imageUrl = await uploadFileToS3(type.USERS, folderName,fileType.AVATAR, image);
     const filter = { _id: userId };
     const update = { avatar: imageUrl };
     const updateUser = await User.findOneAndUpdate(filter, update, {
