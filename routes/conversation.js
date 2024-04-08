@@ -9,7 +9,7 @@ router.get("/", isAuth, conversationController.getConversations);
 router.get('/chat',isAuth, conversationController.getConversation);
 // /conversation/id
 router.post('/:receiverId', isAuth, conversationController.createSingleConversation);
-/conversation/conversationId
+// /conversation/conversationId
 
 router.delete("/:conversationId", isAuth, conversationController.deleteConversation);
 module.exports = router;

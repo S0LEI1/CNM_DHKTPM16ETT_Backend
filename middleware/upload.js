@@ -10,7 +10,7 @@ const upload = multer({
     limits:{
         fieldSize: 1024*1024*5
     }
-}).single("file")
+}).any("files")
 
 
 module.exports = upload;

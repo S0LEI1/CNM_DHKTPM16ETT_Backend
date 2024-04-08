@@ -44,8 +44,8 @@ exports.getConversations = async (req, res, next) => {
 };
 
 exports.getConversation = async (req, res, next) => {
-  const conversationId = req.body.conversationId;
-  const receiverId = req.body.receiverId;
+  const conversationId = req.params.conversationId;
+  // const receiverId = req.body.receiverId;
   const userId = req.userId;
   try {
     const conversation = await Conversation.findOne({ _id: conversationId });
@@ -101,32 +101,32 @@ exports.getConversation = async (req, res, next) => {
   }
 };
 
-// exports.createSingleConversation = async (req, res, next) => {
-//   try {
-//     const userId = req.userId;
-//     const user = await User.findById(userId);
-//     const receiverId = req.params.receiverId;
-//     const receiver = await User.findById(receiverId);
-//     if (!receiver) {
-//       return res.status(404).json({ message: "Receiver not found." });
-//     }
-//     const conversation = await conversationServices.createConversation(userId, receiver.name, receiver.avatar);
-//     const singleChat = await singChatServices.createSingleChat(conversation._id, receiver._id);
-//     if (!conversation) {
-//       return res.status(500).json({ message: CON_ERR });
-//     }
-//     user.conversations.push(conversation);
-//     await user.save();
-//     receiver.conversations.push(conversation);
-//     await receiver.save();
-//     res.status(200).json({ message: CREATE_CHAT, conversation, singleChat });
-//   } catch (error) {
-//     if (!error.statusCode) {
-//       error.statusCode = 500;
-//     }
-//     next(error);
-//   }
-// };
+exports.createSingleConversation = async (req, res, next) => {
+  try {
+    const userId = req.userId;
+    const user = await User.findById(userId);
+    const receiverId = req.params.receiverId;
+    const receiver = await User.findById(receiverId);
+    if (!receiver) {
+      return res.status(404).json({ message: "Receiver not found." });
+    }
+    const conversation = await conversationServices.createConversation(userId, receiver.name, receiver.avatar);
+    const singleChat = await singChatServices.createSingleChat(conversation._id, receiver._id);
+    if (!conversation) {
+      return res.status(500).json({ message: CON_ERR });
+    }
+    user.conversations.push(conversation);
+    await user.save();
+    receiver.conversations.push(conversation);
+    await receiver.save();
+    res.status(200).json({ message: CREATE_CHAT, conversation, singleChat });
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+};
 
 exports.deleteConversation = async (req, res, next) => {
   const userId = req.userId;

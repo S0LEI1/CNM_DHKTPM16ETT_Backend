@@ -25,9 +25,9 @@ const messageSchema = new Schema(
       type: String,
       require: true,
     },
-    fileUrl:{
+    fileUrl:[{
       type: String,
-    },
+    }],
     read: {
       marked: { type: Boolean, default: false }, // Whether the recipient has read the message
       date: Date, // Date when the message was read

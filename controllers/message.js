@@ -31,7 +31,7 @@ exports.createTextMessage = async (req, res, next) => {
   const senderId = req.userId;
   //   const receiverId = req.params.receiverId;
   const content = req.body.content;
-  const file = req.file;
+  const files = req.files;
   try {
     const user = await User.findById(senderId);
     const conversation = await Conversation.findById(conversationId);
@@ -48,14 +48,21 @@ exports.createTextMessage = async (req, res, next) => {
       return res.status(404).json({ message: SINGLE_CHAT_ERR });
     }
     var message;
-    if (file) {
+    if (files) {
+      var fileUrls =  [];
+      console.log(files);
       const folderName = user._id;
-      const fileUrl = await messageServices.uploadFile(folderName, file);
+      // const fileUrl = await messageServices.uploadFile(folderName, file);
+      for (let index = 0; index < files.length; index++) {
+        const url = await messageServices.uploadFile(folderName, files[index]);
+        fileUrls.push(url);
+        console.log(url);
+      }
       message = new Message({
         senderId: senderId,
         senderName: user.name,
         content: content,
-        fileUrl: fileUrl,
+        fileUrl: fileUrls,
         type: "TEXTANDFILE",
       });
     } else {
