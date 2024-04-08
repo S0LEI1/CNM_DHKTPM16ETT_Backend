@@ -62,7 +62,7 @@ exports.createTextMessage = async (req, res, next) => {
         senderId: senderId,
         senderName: user.name,
         content: content,
-        fileUrl: fileUrls,
+        fileUrls: fileUrls,
         type: "TEXTANDFILE",
       });
     } else {
@@ -108,7 +108,7 @@ exports.createFileMessage = async (req, res, next) => {
   const conversationId = req.params.conversationId;
   const senderId = req.userId;
   //   const receiverId = req.params.receiverId;
-  const file = req.file;
+  const files = req.files;
   const user = await User.findById(senderId);
   //   const view = {
   //     inbox: false,
@@ -120,25 +120,34 @@ exports.createFileMessage = async (req, res, next) => {
     if (!conversation) {
       return res.status(404).json({ message: "Conversation not found." });
     }
-    const singleChat = await SingleChat.findById(conversation.chatId);
-    const groupChat = await GroupChat.findById(conversation.chatId);
+    const singleChat = await SingleChat.findOne({
+      conversationId: conversation._id,
+    });
+    const groupChat = await GroupChat.findOne({
+      conversationId: conversation._id,
+    });
     if (!singleChat && !groupChat) {
       return res.status(404).json({ message: SINGLE_CHAT_ERR });
     }
-    if (!file) {
+    if (!files) {
       return res.status(500).json({ message: "No file" });
     }
-    const error = validate.file(file);
-    if (error) {
-      return res.status(500).json({ message: "Validate fail", error: error });
-    }
     const folderName = user._id;
-    const fileUrl = await messageServices.fileMessage(folderName, file);
+    var fileUrls =  [];
+    for (let index = 0; index < files.length; index++) {
+      const error = validate.file(files[index]);
+      if (error) {
+        return res.status(500).json({ message: "Validate fail", error: error });
+      }
+      const url = await messageServices.uploadFile(folderName, files[index]);
+      fileUrls.push(url);
+      console.log(url);
+    }
     const message = new Message({
       senderId: senderId,
       senderName: user.name,
       //   view: view,
-      content: fileUrl,
+      fileUrls: fileUrls,
       type: "FILE",
     });
     await message.save();
@@ -149,8 +158,8 @@ exports.createFileMessage = async (req, res, next) => {
       groupChat.messages.push(message);
       await groupChat.save();
     }
-    // conversation.lastMessages = message._id;
-    // await conversation.save();
+    conversation.lastMessages = message._id;
+    await conversation.save();
     await conversationServices.updateLastMessage(conversation._id, message);
     io.getIO().emit("message", {
       action: "create",

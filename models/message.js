@@ -25,7 +25,7 @@ const messageSchema = new Schema(
       type: String,
       require: true,
     },
-    fileUrl:[{
+    fileUrls:[{
       type: String,
     }],
     read: {
