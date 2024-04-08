@@ -22,7 +22,7 @@ const conversationSchema = new Schema(
       type: String,
       enum: ["SINGLE", "GROUP"],
       default: "SINGLE",
-    },
+    }
   },
   { timeseries: true }
 );

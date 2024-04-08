@@ -1,6 +1,6 @@
 const SingleChat = require("../models/single_chat");
 const singleChatServices = {
-  createSingleChat: async (conversationId, receiverId) => {
+ createSingleChat: async (conversationId, receiverId) => {
     const singleChat = new SingleChat({
       conversationId: conversationId,
       receiverId: receiverId,

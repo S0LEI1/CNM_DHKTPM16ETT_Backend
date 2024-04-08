@@ -17,11 +17,11 @@ const conversationServices = {
       throw error;
     }
   },
-  createConversation: async (userId, name, avatar) => {
+  createConversation: async (userId, chatName, avatar) => {
     try {
       const conversation = new Conversation({
         userId: userId,
-        chatName: name,
+        chatName: chatName,
         avatar: avatar,
         type: "SINGLE",
       });
