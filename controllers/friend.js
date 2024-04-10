@@ -102,6 +102,10 @@ exports.addFriend = async (req, res, next) => {
     if (addFriendReq) {
       return res.status(500).json({ message: "Friend request already exists" });
     }
+    const isFriend = await Friends.find({userIds:[user._id, friend._id]});
+    if(isFriend){
+      return res.status(500).json({message:"were friends"});
+    }
     const addFriend = new AddFriend({
       senderId: userId,
       senderName: user.name,
