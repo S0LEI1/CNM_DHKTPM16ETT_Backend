@@ -5,6 +5,7 @@ const addFriendSchema = new Schema({
     senderId:{
         type: mongoose.Types.ObjectId,
         require:true,
+        ref:"User"
     },
     senderName:{
         type: String,
@@ -13,6 +14,7 @@ const addFriendSchema = new Schema({
     receiverId:{
         type: mongoose.Types.ObjectId,
         require:true,
+        ref:"User"
     },
     receiverName:{
         type: String,

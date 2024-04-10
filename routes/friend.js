@@ -14,5 +14,5 @@ router.get(
 );
 router.post("/add/:friendId", isAuth, friendController.addFriend);
 router.put("/status/:addFriendReqId", isAuth, friendController.updateStatus);
-router.get("/list/req", isAuth, friendController.getAddFriendReq);
+router.get("/list/req", isAuth, friendController.getAddFriendReqs);
 module.exports = router;

@@ -5,23 +5,19 @@ const AddFriend = require("../models/add_friend");
 const io = require("../socket");
 const Friends = require("../models/friends");
 const conversationServices = require("../services/conversation.service");
+const friendServices = require("../services/friend.services");
 
 exports.getListFriends = async (req, res, next) => {
+  const userId = req.userId;
   try {
-    const user = await User.findById(req.userId);
-    if (!user) {
-      return res
-        .status(404)
-        .json({ message: "A user with this email could not be found." });
-    }
-    const users = await User.find(
-      { _id: { $in: user.friends } },
-      { name: 1, avatar: 1, _id: 1 }
-    );
-    if (users.length <= 0) {
+    const friendIds = await friendServices.getListFriends(userId);
+    const friends = await User.find({_id: {$in: friendIds}},{_id:1, name:1, avatar:1})
+    if (friends.length <= 0) {
       return res.status(202).json({ message: "users don't have friends!" });
     }
-    res.status(201).json({ message: "List friends !", users: users });
+    res
+      .status(201)
+      .json({ message: "List friends !", friends, userId });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode === 500;
@@ -68,12 +64,14 @@ exports.findFriendByPhone = async (req, res, next) => {
     if (!friend) {
       return res.status(404).json({ message: "User not exist" });
     }
-    const isExistFriend = await Friends.existsByIds(userId,friend._id);
+    const isExistFriend = await Friends.existsByIds(userId, friend._id);
 
     if (isExistFriend) {
-      return res
-        .status(200)
-        .json({ message: "Find success", friend: friend, isExistFriend: isExistFriend });
+      return res.status(200).json({
+        message: "Find success",
+        friend: friend,
+        isExistFriend: isExistFriend,
+      });
     }
     res.status(200).json({ message: "Find success", friend: friend });
   } catch (error) {
@@ -188,31 +186,20 @@ exports.updateStatus = async (req, res, next) => {
   }
 };
 
-exports.getAddFriendReq = async (req, res, next) => {
+exports.getAddFriendReqs = async (req, res, next) => {
   const userId = req.userId;
   try {
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "Could not find user by id" });
-    }
-    const addFriendReqs = await AddFriend.find({
-      _id: { $in: user.friendRequests },
-    });
+    const addFriendReqs = await friendServices.getListFriendReq(userId);
     if (!addFriendReqs) {
-      return res
-        .status(404)
-        .json({ message: "Could not find Add Friend Request by id" });
+      return res.status(404).json({ message: "Could not find friend request" });
     }
-    const senders = [];
-    for (let index = 0; index < addFriendReqs.length; index++) {
-      senders.push(
-        await User.findById(addFriendReqs[index].senderId, { avatar: 1 })
-      );
+    if (addFriendReqs.length <= 0) {
+      return res.status(200).json({ message: "No friend request now " });
     }
     res.status(200).json({
       message: "Get Add Friend Request Success",
       addFriendReqs: addFriendReqs,
-      senders: senders,
+      // senders: senders,
     });
   } catch (error) {
     if (!error.statusCode) {
