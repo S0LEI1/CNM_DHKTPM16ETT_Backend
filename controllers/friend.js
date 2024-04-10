@@ -51,7 +51,9 @@ exports.getFriend = async (req, res, next) => {
 };
 
 exports.findFriendByPhone = async (req, res, next) => {
+  const userId = req.userId;
   try {
+    const user = await User.findById(userId);
     const phoneNumber = req.params.phoneNumber;
     if (
       !validator.isMobilePhone(phoneNumber, "vi-VN") ||
@@ -66,15 +68,14 @@ exports.findFriendByPhone = async (req, res, next) => {
     if (!friend) {
       return res.status(404).json({ message: "User not exist" });
     }
-    const user = await User.findById(req.userId);
-    const isExistFriend = user.friends.includes(friend.id);
-    console.log(isExistFriend);
-    if (isExistFriend === true) {
+    const isExistFriend = await Friends.existsByIds(userId,friend._id);
+
+    if (isExistFriend) {
       return res
         .status(200)
-        .json({ message: "Find success", friend: friend, isExistFriend, user });
+        .json({ message: "Find success", friend: friend, isExistFriend: isExistFriend });
     }
-    res.status(200).json({ message: "Find success", friend: friend, user });
+    res.status(200).json({ message: "Find success", friend: friend });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode === 500;

@@ -10,6 +10,16 @@ const friendSchema = new Schema({
   ],
 });
 
+friendSchema.statics.existsByIds = async (userId1, userId2) => {
+  const isExists = await Friends.findOne({
+      userIds: { $all: [userId1, userId2] },
+  });
+
+  if (isExists) return true;
+
+  return false;
+};
+
 
 const Friends = mongoose.model("Friends", friendSchema);
 module.exports = Friends;
