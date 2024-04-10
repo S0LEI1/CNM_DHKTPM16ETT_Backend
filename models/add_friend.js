@@ -10,11 +10,11 @@ const addFriendSchema = new Schema({
         type: String,
         require: true
     },
-    reciverId:{
+    receiverId:{
         type: mongoose.Types.ObjectId,
         require:true,
     },
-    reciverName:{
+    receiverName:{
         type: String,
         require: true
     },

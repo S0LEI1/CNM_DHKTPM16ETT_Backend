@@ -3,6 +3,8 @@ const validator = require("validator");
 const User = require("../models/user");
 const AddFriend = require("../models/add_friend");
 const io = require("../socket");
+const Friends = require("../models/friends");
+const conversationServices = require("../services/conversation.service");
 
 exports.getListFriends = async (req, res, next) => {
   try {
@@ -51,21 +53,26 @@ exports.getFriend = async (req, res, next) => {
 exports.findFriendByPhone = async (req, res, next) => {
   try {
     const phoneNumber = req.params.phoneNumber;
-    if(!validator.isMobilePhone(phoneNumber,"vi-VN") || !validator.isLength(phoneNumber,[{max:10, min:10}])){
-      return res.status(500).json({message:"Phone number not validator"})
+    if (
+      !validator.isMobilePhone(phoneNumber, "vi-VN") ||
+      !validator.isLength(phoneNumber, [{ max: 10, min: 10 }])
+    ) {
+      return res.status(500).json({ message: "Phone number not validator" });
     }
     const friend = await User.findOne(
       { phoneNumber: phoneNumber },
-      { _id: 1, name: 1, avatar: 1, phoneNumber:1 }
+      { _id: 1, name: 1, avatar: 1, phoneNumber: 1 }
     );
-    if(!friend){
-      return res.status(404).json({message:"User not exist"})
+    if (!friend) {
+      return res.status(404).json({ message: "User not exist" });
     }
     const user = await User.findById(req.userId);
     const isExistFriend = user.friends.includes(friend.id);
     console.log(isExistFriend);
-    if(isExistFriend === true){
-      return res.status(200).json({ message: "Find success", friend: friend, isExistFriend, user });
+    if (isExistFriend === true) {
+      return res
+        .status(200)
+        .json({ message: "Find success", friend: friend, isExistFriend, user });
     }
     res.status(200).json({ message: "Find success", friend: friend, user });
   } catch (error) {
@@ -78,8 +85,8 @@ exports.findFriendByPhone = async (req, res, next) => {
 exports.addFriend = async (req, res, next) => {
   try {
     const userId = req.userId;
-    const {friendId} = req.params;
-    const {content} = req.body;
+    const { friendId } = req.params;
+    const { content } = req.body;
 
     const user = await User.findById(userId);
     const friend = await User.findById(friendId);
@@ -99,18 +106,23 @@ exports.addFriend = async (req, res, next) => {
     const addFriend = new AddFriend({
       senderId: userId,
       senderName: user.name,
-      reciverId: friendId,
-      reciverName: friend.name,
+      receiverId: friendId,
+      receiverName: friend.name,
       content: content,
     });
     await addFriend.save();
-    friend.friendRequests.push(addFriend);
-    await friend.save();
     io.getIO().emit("addFriend", {
       action: "create",
       addFriend: {
         ...addFriend._doc,
         creator: { _id: userId, name: user.name },
+      },
+    });
+    io.getIO().emit("addFriend", {
+      action: "create",
+      addFriend: {
+        ...addFriend._doc,
+        creator: { _id: friendId, name: friend.name },
       },
     });
     res.status(200).json({
@@ -128,42 +140,43 @@ exports.addFriend = async (req, res, next) => {
 exports.updateStatus = async (req, res, next) => {
   const addFriendReqId = req.params.addFriendReqId;
   const status = req.body.status;
+  const userId = req.userId;
   try {
     const addFriendReq = await AddFriend.findById(addFriendReqId);
-
+    console.log(addFriendReq);
+    const { senderId, receiverId } = addFriendReq;
+    console.log("receiverId:", receiverId);
     if (!addFriendReq) {
       return res
         .status(404)
         .json({ message: "Could not find Add Friend Request by id" });
     }
-    const sender = await User.findById(addFriendReq.senderId);
-    const reciver = await User.findById(addFriendReq.reciverId);
-    if (!sender) {
-      return res.status(404).json({ message: "Could not find user by id" });
-    }
-    if (!reciver) {
-      return res.status(404).json({ message: "Could not reciver user by id" });
-    }
+
     if (status === false) {
-      await reciver.updateOne({
-        $pull: {
-          friendRequests: addFriendReqId,
-        },
-      });
-      await reciver.save();
       await AddFriend.findByIdAndDelete(addFriendReqId);
       return res.status(200).json({ message: "Reciver refuse add friend" });
     } else {
-      sender.friends.push(reciver.id);
-      reciver.friends.push(sender.id);
-      await reciver.updateOne({
-        $pull: {
-          friendRequests: addFriendReqId,
-        },
-      });
+      const friend = new Friends({ userIds: [senderId, receiverId] });
+      await friend.save();
     }
-    await sender.save();
-    await reciver.save();
+    const conversation = await conversationServices.createSingleConversation(
+      senderId,
+      receiverId
+    );
+    io.getIO().emit("create-conversation", {
+      action: "create",
+      conversation: {
+        ...conversation._doc,
+        creator: { _id: senderId },
+      },
+    });
+    io.getIO().emit("create-conversation", {
+      action: "create",
+      conversation: {
+        ...conversation._doc,
+        creator: { _id: receiverId },
+      },
+    });
     await AddFriend.findByIdAndDelete(addFriendReqId);
     res.status(200).json({ message: "Add friend success." });
   } catch (error) {

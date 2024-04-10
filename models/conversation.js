@@ -11,13 +11,19 @@ const conversationSchema = new Schema(
       type: String,
       require: true,
     },
-    avatar:{
-      type: String
-    },
+    // avatar:{
+    //   type: String
+    // },
     lastMessages: {
       type: Schema.Types.ObjectId,
       ref: "Message",
     },
+    members:[
+      {
+        type: Schema.Types.ObjectId,
+        ref:"Member"
+      }
+    ],
     type: {
       type: String,
       enum: ["SINGLE", "GROUP"],

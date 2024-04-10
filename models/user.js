@@ -22,24 +22,6 @@ const userSchema = new Schema(
       type: String,
       require: false,
     },
-    friends: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-    conversations: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "Conversation",
-      },
-    ],
-    friendRequests: [
-      {
-        type: mongoose.Types.ObjectId,
-        ref: "AddFriend",
-      },
-    ],
     role :{
       type : String,
       enum:["ADMIN","USER"],

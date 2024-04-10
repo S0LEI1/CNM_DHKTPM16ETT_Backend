@@ -2,8 +2,8 @@ const mongoose = require("mongoose");
 const User = require("../models/user");
 const Message = require("../models/message");
 const Conversation = require("../models/conversation");
-const SingleChat = require("../models/single_chat");
-const GroupChat = require("../models/group_chat");
+// const SingleChat = require("../models/single_chat");
+// const GroupChat = require("../models/group_chat");
 const {
   USER_NOT_FOUND_ERR,
   CON_NOT_FOUND_ERR,
@@ -16,9 +16,8 @@ const conversationServices = require("../services/conversation.service");
 const userService = require("../services/user.services");
 const messageServices = require("../services/message.services");
 const { CREATE_CHAT, DELETE_CHAT } = require("../success");
-const singChatServices = require("../services/single_chat.services");
+// const singChatServices = require("../services/single_chat.services");
 const { avatar } = require("../utils/validate");
-const singleChatServices = require("../services/single_chat.services");
 
 exports.getConversations = async (req, res, next) => {
   const userId = req.userId;
@@ -33,7 +32,7 @@ exports.getConversations = async (req, res, next) => {
     if (!conversations) {
       return res.status(404).json({ message: CON_NOT_FOUND_ERR });
     }
-
+    
     res.status(200).json({ conversations: conversations, user: user });
   } catch (error) {
     if (!error.statusCode) {
@@ -45,54 +44,38 @@ exports.getConversations = async (req, res, next) => {
 
 exports.getConversation = async (req, res, next) => {
   const conversationId = req.params.conversationId;
-  // const receiverId = req.body.receiverId;
   const userId = req.userId;
+  // const user = await User.findById(userId);
   try {
-    const conversation = await Conversation.findOne({ _id: conversationId });
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: USER_NOT_FOUND_ERR });
-    }
-    const receiver = await User.findById(receiverId);
+    const conversation = await Conversation.findById(conversationId);
     if (!conversation) {
-      const cons = await conversationServices.createConversation(
-        user._id,
-        receiver.name,
-        receiver.avatar
-      );
-      const chat = await singleChatServices.createSingleChat(
-        cons._id,
-        receiver._id
-      );
-      return res.status(200).json({
-        message: "Create singleConversation success",
-        avatar: receiver.avatar,
-        chatName: cons.chatName,
-        chat,
-      });
-    } else if (conversation) {
-      const conversation = await Conversation.findById(conversationId);
-      var chat;
-      if (conversation.type === "SINGLE") {
-        chat = await SingleChat.findOne({ conversationId: conversationId })
-          .populate("messages")
-          .exec();
-      } else if (conversation.type === "GROUP") {
-        chat = await GroupChat.findOne({ conversationId: conversationId })
-          .populate("messages")
-          .exec();
-      } else {
-        return res.status(500).json({ message: "An error" });
-      }
-      return res.status(201).json({
-        message: "Success",
-
-        avatar: conversation.avatar,
-        chatName: conversation.chatName,
-        // messages,
-        chat,
-      });
+      return res.status(404).json({ message: CON_NOT_FOUND_ERR });
     }
+    var chat;
+    if(conversation.type ==="SINGLE"){
+      chat = await SingleChat.findOne({conversationId: conversationId}).populate("messages").exec();
+    }else if(conversation.type ==="GROUP"){
+      chat = await GroupChat.findOne({conversationId: conversationId}).populate("messages").exec();
+    }else{
+      return res.status(500).json({message:"An error"})
+    }
+    // const messages = await Message.find({_id: {$in: chat.messages}})
+
+    // if (messages.length <= 0) {
+    //   return res.status(200).json({ message: MGS_NOT_FOUND_ERR });
+    // }
+    // const receiver = await User.findById(singleChat.receriverId);
+    // if (!receiver) {
+    //   return res.status(404).json({ message: RECEIVER_NOT_FOUND_ERR });
+    // }
+    res.status(201).json({
+      message: "Success",
+      
+      avatar: conversation.avatar,
+      chatName: conversation.chatName,
+      // messages,
+      chat
+    });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;

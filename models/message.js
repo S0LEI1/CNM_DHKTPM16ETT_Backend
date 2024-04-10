@@ -6,10 +6,16 @@ const messageSchema = new Schema(
     senderId: {
       type: Schema.Types.ObjectId,
       require: true,
+      ref:"User"
     },
     senderName: {
       type: String,
       require: true,
+    },
+    conversationId:{
+      type: Schema.Types.ObjectId,
+      require: true,
+      ref:"Conversation"
     },
     type:{
       type: String,
