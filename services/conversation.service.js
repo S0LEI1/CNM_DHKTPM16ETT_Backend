@@ -11,12 +11,7 @@ const conversationServices = {
       const conversations = await Conversation.find({
         _id: { $in: user.conversations },
       })
-        .populate({
-          path: "participants",
-          match: { _id: { $ne: user._id } },
-          select: "name avatar phoneNumber email",
-        })
-        .exec();
+       
       return conversations;
     } catch (error) {
       throw error;
@@ -76,6 +71,25 @@ const conversationServices = {
       });
       await conversation.save();
       return conversation;
+    } catch (error) {
+      throw error;
+    }
+  },
+  getSummaryConversation: async (conversationId, userId) => {
+    try {
+      const member = await Member.getByConversationIdAndUserId(conversationId, userId);
+      const conversation = await Conversation.findById(conversationId);
+      const lastMessageId = conversation.lastMessages;
+      const lastMessage = lastMessageId
+        ? await Message.findById(lastMessageId,{content:1})
+        : null;
+      let nameAndAvatar;
+      if (conversation.type === "SINGLE") {
+        nameAndAvatar = await singleConversationServices.getSingleConversation(conversationId, userId);
+      }else if(conversation.type ==="GROUP"){
+        nameAndAvatar = "";
+      }
+      return {conversationId, ...nameAndAvatar, lastMessage}
     } catch (error) {
       throw error;
     }

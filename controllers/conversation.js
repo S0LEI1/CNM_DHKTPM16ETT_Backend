@@ -22,11 +22,15 @@ const { avatar } = require("../utils/validate");
 exports.getListConversation = async (req, res, next) => {
   const userId = req.userId;
   try {
-    const conversations = await Conversation.find({
+    const conversation = await Conversation.find({
       members: { $in: [userId] },
     });
-    if (!conversations) {
-      return res.status(404).json({ message: CON_NOT_FOUND_ERR });
+    const conversationIds = conversation.map(cons => cons._id);
+    console.log(conversationIds);
+    const conversations = [];
+    for (let index = 0; index < conversationIds.length; index++) {
+      const cons = await conversationServices.getSummaryConversation(conversationIds[index], userId);
+      conversations.push(cons)
     }
     
     res.status(200).json({ conversations: conversations});

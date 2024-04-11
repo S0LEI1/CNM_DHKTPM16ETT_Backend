@@ -71,6 +71,9 @@ exports.createTextMessage = async (req, res, next) => {
         //   view: view,
         content: content,
         conversationId: conversationId,
+        // view:{
+        //     in
+        // }
       });
     }
     await message.save();
@@ -153,32 +156,25 @@ exports.createFileMessage = async (req, res, next) => {
 };
 exports.deleteMessage = async (req, res, next) => {
   const messageId = req.params.messageId;
-  const chatId = req.body.chatId;
+  const conversationId = req.body.conversationId;
+  const userId = req.userId;
   try {
     const message = await Message.findById(messageId);
     if (!message) {
       return res.status(404).json({ message: "Message not found" });
     }
-    await message.deleteOne();
-    const singChat = await SingleChat.findById(chatId);
-    const groupChat = await GroupChat.findById(chatId);
-    if (!singChat && !groupChat)
-      return res.status(404).json({ message: CON_NOT_FOUND_ERR });
-
-    if (singChat) {
-      await singleChatServices.removeMessage(chatId, message._id);
-      await singChat.save();
-      return res
-        .status(200)
-        .json({ message: "Delete success", message, singChat });
-    } else if (groupChat) {
-      await groupChatServices.removeMessage(chatId, message._id);
-      await groupChat.save();
-      return res
-        .status(200)
-        .json({ message: "Delete success", message, groupChat });
-    } else {
-      return res.status(500).json({ message: "Type not valid" });
+    if(message.senderId != userId){
+        return res.status(500).json({})
+    }else{
+        message.deleteOne();
+        return io.getIO().emit("delete-message", {
+            action: "delete",
+            message: {
+              ...message._doc,
+              conversationId,
+              // message
+            },
+          });
     }
   } catch (error) {}
 };
