@@ -22,10 +22,9 @@ const messageSchema = new Schema(
       enum:["TEXT","FILE","LINK","TEXTANDFILE","TEXTANDLINK"],
       default: "TEXT"
     },
-    view: {
-      inbox: Boolean,
-      outbox: Boolean,
-      archive: Boolean,
+    isView:{
+      type: Boolean,
+      default: true
     },
     content: {
       type: String,

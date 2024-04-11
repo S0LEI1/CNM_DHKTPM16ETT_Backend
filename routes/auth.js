@@ -6,7 +6,7 @@ const isAuth = require("../middleware/is-auth");
 const User = require("../models/user");
 
 const authController = require("../controllers/auth");
-const { singleUpload } = require("../middleware/upload");
+const upload = require("../middleware/upload");
 
 // /auth/signup
 router.post("/signup", authController.signup);
@@ -15,7 +15,7 @@ router.post("/signup", authController.signup);
 router.post("/login", authController.login);
 
 // /auth/update
-router.put("/update", isAuth, singleUpload, authController.updateAvatar);
+router.put("/update", isAuth, upload.singleUploadMiddleware, authController.updateAvatar);
 // /auth/user
 router.get("/user", isAuth, authController.getUser);
 

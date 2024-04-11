@@ -8,7 +8,7 @@ const friendServices = {
     console.log(user);
     const addFriendReqs = await AddFriend.aggregate([
       { $match: { receiverId: new Object(_id) } },
-      { $project: { _id: 0, senderId: 1, content:1 } },
+      { $project: { _id: 1, senderId: 1, content:1 } },
       {
         $lookup: {
           from: "users",
@@ -25,7 +25,8 @@ const friendServices = {
           name: 1,
           avatar: 1,
         },
-        content:1
+        content:1,
+        _id:1
       }
       },
     ]);

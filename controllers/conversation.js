@@ -47,7 +47,7 @@ exports.getConversation = async (req, res, next) => {
     if (!conversation) {
       return res.status(404).json({ message: CON_NOT_FOUND_ERR });
     }
-    res.status(201).json({
+    res.status(200).json({
       message: "Success",
       conversation,
       nameAndAvatar,
@@ -74,7 +74,7 @@ exports.createSingleConversation = async (req, res, next) => {
       senderId,
       receiverId
     );
-    res.status(200).json({ message: CREATE_CHAT, conversation});
+    res.status(201).json({ message: CREATE_CHAT, conversation});
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
@@ -82,6 +82,7 @@ exports.createSingleConversation = async (req, res, next) => {
     next(error);
   }
 };
+
 
 exports.deleteConversation = async (req, res, next) => {
   const userId = req.userId;

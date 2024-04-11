@@ -23,7 +23,7 @@ const fileType = {
 const messageServices = {
   getMessages: async (consId) => {
     const messages = await Message.find(
-      { conversationId: consId },
+      {conversationId: consId, isView: true},
       {
         _id: 1,
         content: 1,
@@ -31,6 +31,7 @@ const messageServices = {
         senderName: 1,
         createdAt: 1,
         updatedAt: 1,
+        isView:1
       }
     ).sort({ createdAt: -1 });
     return messages;

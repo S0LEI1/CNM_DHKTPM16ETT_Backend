@@ -1,5 +1,5 @@
 const multer = require("multer");
-
+const util = require('util');
 const storage = multer.memoryStorage({
     destination: function(req, file, cb){
         cb(null, "/");
@@ -18,5 +18,8 @@ const singleUpload = multer({
     }
 }).single("image")
 
+let multipleUploadMiddleware = util.promisify(manyUpload);
+let singleUploadMiddleware = util.promisify(singleUpload);
 
-module.exports = {manyUpload, singleUpload};
+
+module.exports = {multipleUploadMiddleware, singleUploadMiddleware};

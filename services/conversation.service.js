@@ -94,7 +94,7 @@ const conversationServices = {
       }else if(conversation.type ==="GROUP"){
         nameAndAvatar = "";
       }
-      const messages = await messageServices.getMessages(consId);
+      const messages = await messageServices.getMessages(consId, true);
       return {conversation, nameAndAvatar, messages}
     } catch (error) {
       throw error;
