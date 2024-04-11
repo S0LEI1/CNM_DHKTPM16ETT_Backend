@@ -9,7 +9,7 @@ const authRoutes = require("./routes/auth");
 const friendRoutes = require("./routes/friend");
 const messageRoutes = require("./routes/message");
 const conversationRoutes = require("./routes/conversation");
-const upload = require("./middleware/upload");
+const {upload, singleUpload} = require("./middleware/upload");
 
 const app = express();
 
@@ -33,7 +33,8 @@ app.use((req, res, next) => {
 });
 
 
-app.use(upload);
+app.use(singleUpload);
+// app.use(upload);
 app.use("/auth", authRoutes);
 app.use("/friend", friendRoutes);
 app.use("/message",messageRoutes);
@@ -48,7 +49,7 @@ app.use((error, req, res, next) => {
 
   mongoose
   .connect(
-    "mongodb+srv://soleil:01636878201@cluster0.4x48u.mongodb.net/chatapp?retryWrites=true&w=majority&appName=Cluster0"
+    "mongodb+srv://soleil:01636878201@cluster0.4x48u.mongodb.net/chatapp2?retryWrites=true&w=majority&appName=Cluster0"
   )
   .then((result) => {
     const server = app.listen(8000);

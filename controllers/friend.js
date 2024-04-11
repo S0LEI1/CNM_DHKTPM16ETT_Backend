@@ -102,7 +102,7 @@ exports.addFriend = async (req, res, next) => {
     if (addFriendReq) {
       return res.status(500).json({ message: "Friend request already exists" });
     }
-    const isFriend = await Friends.find({userIds:[user._id, friend._id]});
+    const isFriend = await Friends.findOne({userIds:[user._id, friend._id]});
     if(isFriend){
       return res.status(500).json({message:"were friends"});
     }
@@ -190,15 +190,16 @@ exports.updateStatus = async (req, res, next) => {
   }
 };
 
-exports.getAddFriendReqs = async (req, res, next) => {
+exports.getListAddFriendReqs = async (req, res, next) => {
   const userId = req.userId;
   try {
     const addFriendReqs = await friendServices.getListFriendReq(userId);
+    
     if (!addFriendReqs) {
       return res.status(404).json({ message: "Could not find friend request" });
     }
     if (addFriendReqs.length <= 0) {
-      return res.status(200).json({ message: "No friend request now " });
+      return res.status(200).json({ message: "No friend request now ", addFriendReqs });
     }
     res.status(200).json({
       message: "Get Add Friend Request Success",

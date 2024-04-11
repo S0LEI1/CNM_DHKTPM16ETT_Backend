@@ -10,7 +10,13 @@ const upload = multer({
     limits:{
         fieldSize: 1024*1024*5
     }
-}).any("files")
+}).any("files");
+const singleUpload = multer({
+    storage: storage,
+    limits:{
+        fieldSize: 1024*1024*5
+    }
+}).single("image")
 
 
-module.exports = upload;
+module.exports = {upload, singleUpload};
