@@ -22,7 +22,7 @@ const singleConversationServices = {
           },
           {
             $project: {
-              _id: 0,
+              _id: 1,
               name: "$user.name",
               avatar: "$user.avatar",
             },
