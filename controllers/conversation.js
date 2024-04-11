@@ -78,21 +78,24 @@ exports.createSingleConversation = async (req, res, next) => {
       userId,
       receiverId
     );
+    const cons = await conversationServices.getSummaryConversation(conversation._id, userId);
+    console.log(cons);
     io.getIO().emit("create-conversation", {
       action: "create",
       conversation: {
-        ...conversation._doc,
+        ...cons._doc,
         creator: { _id: userId },
       },
+
     });
     io.getIO().emit("create-conversation", {
       action: "create",
       conversation: {
-        ...conversation._doc,
+        ...cons._doc,
         creator: { _id: receiverId },
       },
     });
-    res.status(201).json({ message: CREATE_CHAT, conversation});
+    res.status(201).json({ message: CREATE_CHAT, conversation: cons});
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
