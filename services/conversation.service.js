@@ -17,6 +17,35 @@ const conversationServices = {
       throw error;
     }
   },
+  createGroupConversation: async (userId, name, memberIds, file) => {
+    if (memberIds <= 0)
+      return new Error("Not enough members to create a group");
+    const userIds = [userId, ...memberIds];
+    console.log(userIds);
+    const user = await User.find({_id:{$in:userIds}});
+    if (!user) return new Error("User not found");
+    const group = new Conversation({
+      chatName: name,
+      leaderId: userId,
+      type:"GROUP"
+    });
+    if (file) {
+      const fileUrl = await uploadFileToS3("conversations", group._id, "image", file);
+      group.avatar = fileUrl;
+    }
+    const groupId = group._id;
+    for (let index = 0; index < userIds.length; index++) {
+      const member = new Member({
+        conversationId: groupId,
+        userId: userIds[index],
+      })
+      group.members.push(member);
+      await member.save();
+    }
+    await group.save();
+    return group;
+
+  },
   createSingleConversation: async (userId1, userId2) => {
     try {
       const user1 = await User.findById(userId1);
@@ -49,35 +78,6 @@ const conversationServices = {
     } catch (error) {
       throw error;
     }
-  },
-  createGroupConversation: async (userId, name, memberIds, file) => {
-    if (memberIds <= 0)
-      return new Error("Not enough members to create a group");
-    const userIds = [userId, ...memberIds];
-    console.log(userIds);
-    const user = await User.find({_id:{$in:userIds}});
-    if (!user) return new Error("User not found");
-    const group = new Conversation({
-      chatName: name,
-      leaderId: userId,
-      type:"GROUP"
-    });
-    if (file) {
-      const fileUrl = await uploadFileToS3("conversations", group._id, "image", file);
-      group.avatar = fileUrl;
-    }
-    const groupId = group._id;
-    for (let index = 0; index < userIds.length; index++) {
-      const member = new Member({
-        conversationId: groupId,
-        userId: userIds[index],
-      })
-      group.members.push(member);
-      await member.save();
-    }
-    await group.save();
-    return group;
-
   },
   updateLastMessage: async (conversationId, message) => {
     try {

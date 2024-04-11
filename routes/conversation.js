@@ -10,7 +10,7 @@ router.get("/", isAuth, conversationController.getListConversation);
 // /conversation/id
 router.get('/:conversationId',isAuth, conversationController.getConversation);
 
-// router.post("/:receiverId", isAuth, conversationController.createSingleConversation);
-router.post("/group", isAuth, upload.singleUploadMiddleware, conversationController.createGroupConversation);
+router.post("/single/:receiverId", isAuth, conversationController.createSingleConversation);
 router.delete("/:conversationId", isAuth, conversationController.deleteConversation);
+router.post("/group", isAuth, upload.singleUploadMiddleware, conversationController.createGroupConversation);
 module.exports = router;
