@@ -24,15 +24,18 @@ exports.getListConversation = async (req, res, next) => {
     const conversation = await Conversation.find({
       members: { $in: [userId] },
     });
-    const conversationIds = conversation.map(cons => cons._id);
+    const conversationIds = conversation.map((cons) => cons._id);
     console.log(conversationIds);
     const conversations = [];
     for (let index = 0; index < conversationIds.length; index++) {
-      const cons = await conversationServices.getSummaryConversation(conversationIds[index], userId);
-      conversations.push(cons)
+      const cons = await conversationServices.getSummaryConversation(
+        conversationIds[index],
+        userId
+      );
+      conversations.push(cons);
     }
-    
-    res.status(200).json({conversations: conversations});
+
+    res.status(200).json({ conversations: conversations });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
@@ -46,7 +49,8 @@ exports.getConversation = async (req, res, next) => {
   const userId = req.userId;
   // const user = await User.findById(userId);
   try {
-    const {conversation, nameAndAvatar, messages} = await conversationServices.getConversation(conversationId, userId);
+    const { conversation, nameAndAvatar, messages } =
+      await conversationServices.getConversation(conversationId, userId);
     if (!conversation) {
       return res.status(404).json({ message: CON_NOT_FOUND_ERR });
     }
@@ -54,7 +58,7 @@ exports.getConversation = async (req, res, next) => {
       message: "Success",
       conversation,
       nameAndAvatar,
-      messages
+      messages,
     });
   } catch (error) {
     if (!error.statusCode) {
@@ -64,38 +68,71 @@ exports.getConversation = async (req, res, next) => {
   }
 };
 
-exports.createSingleConversation = async (req, res, next) => {
+// exports.createSingleConversation = async (req, res, next) => {
+//   try {
+//     const userId = req.userId;
+//     const user = await User.findById(userId);
+//     const receiverId = req.params.receiverId;
+//     const receiver = await User.findById(receiverId);
+//     console.log(receiver);
+//     if (!receiver) {
+//       return res.status(404).json({ message: "Receiver not found." });
+//     }
+//     const conversation = await conversationServices.createSingleConversation(
+//       userId,
+//       receiverId
+//     );
+//     const cons = await conversationServices.getSummaryConversation(
+//       conversation._id,
+//       userId
+//     );
+//     console.log(cons);
+//     io.getIO().emit("create-conversation", {
+//       action: "create",
+//       conversation: {
+//         ...cons._doc,
+//         creator: { _id: userId },
+//       },
+//     });
+//     io.getIO().emit("create-conversation", {
+//       action: "create",
+//       conversation: {
+//         ...cons._doc,
+//         creator: { _id: receiverId },
+//       },
+//     });
+//     res.status(201).json({ message: CREATE_CHAT, conversation: cons });
+//   } catch (error) {
+//     if (!error.statusCode) {
+//       error.statusCode = 500;
+//     }
+//     next(error);
+//   }
+// };
+
+exports.createGroupConversation = async (req, res, next) => {
+  const userId = req.userId;
+  const chatName = req.body.chatName;
+  const memberIds = req.body.memberIds;
+  const image = req.file;
   try {
-    const userId = req.userId;
-    const user = await User.findById(userId);
-    const receiverId = req.params.receiverId;
-    const receiver = await User.findById(receiverId);
-    console.log(receiver);
-    if (!receiver) {
-      return res.status(404).json({ message: "Receiver not found." });
-    }
-    const conversation = await conversationServices.createSingleConversation(
+    const groupCons = await conversationServices.createGroupConversation(
       userId,
-      receiverId
+      chatName,
+      memberIds,
+      image
     );
-    const cons = await conversationServices.getSummaryConversation(conversation._id, userId);
-    console.log(cons);
-    io.getIO().emit("create-conversation", {
-      action: "create",
-      conversation: {
-        ...cons._doc,
-        creator: { _id: userId },
-      },
-
-    });
-    io.getIO().emit("create-conversation", {
-      action: "create",
-      conversation: {
-        ...cons._doc,
-        creator: { _id: receiverId },
-      },
-    });
-    res.status(201).json({ message: CREATE_CHAT, conversation: cons});
+    // const groupUserId = [userId, ...memberIds];
+    // for (let index = 0; index < groupUserId.length; index++) {
+    //   io.getIO().emit("create-group-conversation", {
+    //     action: "create",
+    //     group: {
+    //       ...groupCons._doc,
+    //       member: { _id: groupUserId[index] },
+    //     },
+    //   });
+    // }
+    res.status(201).json({ groupCons });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
@@ -103,7 +140,6 @@ exports.createSingleConversation = async (req, res, next) => {
     next(error);
   }
 };
-
 
 exports.deleteConversation = async (req, res, next) => {
   const userId = req.userId;

@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const conversationSchema = new Schema(
   {
-    userId: {
+    leaderId: {
       type: Schema.Types.ObjectId,
       ref:"User",
       require: true,
@@ -11,9 +11,9 @@ const conversationSchema = new Schema(
       type: String,
       require: true,
     },
-    // avatar:{
-    //   type: String
-    // },
+    avatar:{
+      type: String
+    },
     lastMessages: {
       type: Schema.Types.ObjectId,
       ref: "Message",
