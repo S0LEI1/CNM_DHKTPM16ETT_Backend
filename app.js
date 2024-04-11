@@ -9,7 +9,6 @@ const authRoutes = require("./routes/auth");
 const friendRoutes = require("./routes/friend");
 const messageRoutes = require("./routes/message");
 const conversationRoutes = require("./routes/conversation");
-const {upload, singleUpload} = require("./middleware/upload");
 
 const app = express();
 
@@ -33,8 +32,7 @@ app.use((req, res, next) => {
 });
 
 
-app.use(singleUpload);
-// app.use(upload);
+
 app.use("/auth", authRoutes);
 app.use("/friend", friendRoutes);
 app.use("/message",messageRoutes);

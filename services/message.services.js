@@ -21,9 +21,9 @@ const fileType = {
   VIDEO: "video",
 };
 const messageServices = {
-  getMessages: async (messagesId) => {
+  getMessages: async (consId) => {
     const messages = await Message.find(
-      { _id: messagesId },
+      { conversationId: consId },
       {
         _id: 1,
         content: 1,
@@ -32,14 +32,7 @@ const messageServices = {
         createdAt: 1,
         updatedAt: 1,
       }
-    );
-    // const userMessages = [];
-    // const friendMessages = [];
-    // for (let index = 0; index < messages.length; index++) {
-    //   if (messages[index].senderId.toString() === userId.toString()) {
-    //     userMessages.push(messages[index]);
-    //   } else friendMessages.push(messages[index]);
-    // }
+    ).sort({ createdAt: -1 });
     return messages;
   },
   uploadFile: async (folderName, file) => {
@@ -71,8 +64,6 @@ const messageServices = {
       return null;
     }
   },
-  createMessage: () =>{
-
-  }
+  createMessage: () => {},
 };
 module.exports = messageServices;

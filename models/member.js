@@ -14,5 +14,19 @@ const memberSchema = new Schema({
     }
 })
 
+memberSchema.statics.getByConversationIdAndUserId = async (
+    conversationId,
+    userId,
+) => {
+    const member = await Member.findOne({
+        conversationId,
+        userId,
+    });
+
+    if (!member) throw new Error("Conversation not found");
+
+    return member;
+};
+
 const Member = mongoose.model("member", memberSchema);
 module.exports = Member;

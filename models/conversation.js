@@ -32,5 +32,5 @@ const conversationSchema = new Schema(
   },
   { timeseries: true }
 );
-
+conversationSchema.index({ name: 'text' });
 module.exports = mongoose.model("Conversation", conversationSchema);

@@ -5,12 +5,12 @@ const storage = multer.memoryStorage({
         cb(null, "/");
     }
 });
-const upload = multer({
+const manyUpload = multer({
     storage: storage,
     limits:{
         fieldSize: 1024*1024*5
     }
-}).any("files");
+}).array("files",10);
 const singleUpload = multer({
     storage: storage,
     limits:{
@@ -19,4 +19,4 @@ const singleUpload = multer({
 }).single("image")
 
 
-module.exports = {upload, singleUpload};
+module.exports = {manyUpload, singleUpload};

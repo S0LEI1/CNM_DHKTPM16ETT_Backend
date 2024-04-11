@@ -2,7 +2,10 @@ const Conversation = require("../models/conversation");
 const Member = require("../models/member");
 const Message = require("../models/message");
 const User = require("../models/user");
+const messageServices = require("./message.services");
+const singleConversationServices = require("./single.conversation.service");
 const conversationServices = {
+  
   getConversations: async (user) => {
     try {
       const conversations = await Conversation.find({
@@ -27,7 +30,7 @@ const conversationServices = {
         type: "SINGLE",
         members: { $all: [userId1, userId2] },
       });
-      if(existConversation){
+      if (existConversation) {
         return existConversation;
       }
       const conversation = new Conversation({
@@ -77,6 +80,27 @@ const conversationServices = {
       throw error;
     }
   },
+  getConversation: async (consId, userId) => {
+    try {
+      const member = await Member.getByConversationIdAndUserId(consId, userId);
+      const conversation = await Conversation.findById(consId);
+      // const lastMessageId = conversation.lastMessages;
+      // const lastMessage = lastMessageId
+      //   ? await Message.findById(lastMessageId)
+      //   : null;
+      let nameAndAvatar;
+      if (conversation.type === "SINGLE") {
+        nameAndAvatar = await singleConversationServices.getSingleConversation(consId, userId);
+      }else if(conversation.type ==="GROUP"){
+        nameAndAvatar = "";
+      }
+      const messages = await messageServices.getMessages(consId);
+      return {conversation, nameAndAvatar, messages}
+    } catch (error) {
+      throw error;
+    }
+  },
+
 };
 
 module.exports = conversationServices;

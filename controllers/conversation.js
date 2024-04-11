@@ -19,21 +19,17 @@ const { CREATE_CHAT, DELETE_CHAT } = require("../success");
 // const singChatServices = require("../services/single_chat.services");
 const { avatar } = require("../utils/validate");
 
-exports.getConversations = async (req, res, next) => {
+exports.getListConversation = async (req, res, next) => {
   const userId = req.userId;
   try {
-    const user = await userService.getUserById(userId);
-    if (!user) {
-      return res.status(404).json({ message: USER_NOT_FOUND_ERR });
-    }
     const conversations = await Conversation.find({
-      _id: { $in: user.conversations },
+      members: { $in: [userId] },
     });
     if (!conversations) {
       return res.status(404).json({ message: CON_NOT_FOUND_ERR });
     }
     
-    res.status(200).json({ conversations: conversations, user: user });
+    res.status(200).json({ conversations: conversations});
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
@@ -47,34 +43,15 @@ exports.getConversation = async (req, res, next) => {
   const userId = req.userId;
   // const user = await User.findById(userId);
   try {
-    const conversation = await Conversation.findById(conversationId);
+    const {conversation, nameAndAvatar, messages} = await conversationServices.getConversation(conversationId, userId);
     if (!conversation) {
       return res.status(404).json({ message: CON_NOT_FOUND_ERR });
     }
-    var chat;
-    if(conversation.type ==="SINGLE"){
-      chat = await SingleChat.findOne({conversationId: conversationId}).populate("messages").exec();
-    }else if(conversation.type ==="GROUP"){
-      chat = await GroupChat.findOne({conversationId: conversationId}).populate("messages").exec();
-    }else{
-      return res.status(500).json({message:"An error"})
-    }
-    // const messages = await Message.find({_id: {$in: chat.messages}})
-
-    // if (messages.length <= 0) {
-    //   return res.status(200).json({ message: MGS_NOT_FOUND_ERR });
-    // }
-    // const receiver = await User.findById(singleChat.receriverId);
-    // if (!receiver) {
-    //   return res.status(404).json({ message: RECEIVER_NOT_FOUND_ERR });
-    // }
     res.status(201).json({
       message: "Success",
-      
-      avatar: conversation.avatar,
-      chatName: conversation.chatName,
-      // messages,
-      chat
+      conversation,
+      nameAndAvatar,
+      messages
     });
   } catch (error) {
     if (!error.statusCode) {
@@ -93,16 +70,11 @@ exports.createSingleConversation = async (req, res, next) => {
     if (!receiver) {
       return res.status(404).json({ message: "Receiver not found." });
     }
-    const conversation = await conversationServices.createConversation(userId, receiver.name, receiver.avatar);
-    const singleChat = await singChatServices.createSingleChat(conversation._id, receiver._id);
-    if (!conversation) {
-      return res.status(500).json({ message: CON_ERR });
-    }
-    user.conversations.push(conversation);
-    await user.save();
-    receiver.conversations.push(conversation);
-    await receiver.save();
-    res.status(200).json({ message: CREATE_CHAT, conversation, singleChat });
+    const conversation = await conversationServices.createSingleConversation(
+      senderId,
+      receiverId
+    );
+    res.status(200).json({ message: CREATE_CHAT, conversation});
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;

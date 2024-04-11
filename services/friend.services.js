@@ -8,7 +8,7 @@ const friendServices = {
     console.log(user);
     const addFriendReqs = await AddFriend.aggregate([
       { $match: { receiverId: new Object(_id) } },
-      { $project: { _id: 0, senderId: 1 } },
+      { $project: { _id: 0, senderId: 1, content:1 } },
       {
         $lookup: {
           from: "users",
@@ -18,13 +18,15 @@ const friendServices = {
         },
       },
       { $unwind: "$sender" },
-      { $replaceWith: "$sender" },
+      // { $replaceWith: "$sender" },
       {
-        $project: {
+        $project: { sender:{
           _id: 1,
           name: 1,
           avatar: 1,
         },
+        content:1
+      }
       },
     ]);
 
