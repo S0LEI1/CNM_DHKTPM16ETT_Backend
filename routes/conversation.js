@@ -19,6 +19,7 @@ router.post("/group", isAuth, upload.singleUploadMiddleware, conversationControl
 // member
 
 router.get("/member/:conversationId", isAuth, memberController.getList);
-
-
+router.post("/member/:conversationId", isAuth, memberController.addMember);
+router.delete("/member/:conversationId", isAuth, memberController.deleteMember)
+router.delete("/member/leave/:conversationId", isAuth, memberController.leaveGroup);
 module.exports = router;

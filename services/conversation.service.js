@@ -2,6 +2,7 @@ const Conversation = require("../models/conversation");
 const Member = require("../models/member");
 const Message = require("../models/message");
 const User = require("../models/user");
+const groupConversationServices = require("./group.conversation.service");
 const messageServices = require("./message.services");
 const singleConversationServices = require("./single.conversation.service");
 const { uploadFileToS3 } = require("./upload_file");
@@ -122,7 +123,7 @@ const conversationServices = {
           userId
         );
       } else if (conversation.type === "GROUP") {
-        nameAndAvatar = "";
+        nameAndAvatar = await groupConversationServices.getNameAndAvatar(conversation);
       }
       return { conversationId, ...nameAndAvatar, lastMessage };
     } catch (error) {
@@ -144,7 +145,7 @@ const conversationServices = {
           userId
         );
       } else if (conversation.type === "GROUP") {
-        nameAndAvatar = "";
+        nameAndAvatar = await groupConversationServices.getGroupConversation(consId);
       }
       const messages = await messageServices.getMessages(consId, true);
       return { conversation, nameAndAvatar, messages };
@@ -152,6 +153,9 @@ const conversationServices = {
       throw error;
     }
   },
+  updateLeader: async (conversationId, userId, newLeaderId) =>{
+
+  }
 };
 
 module.exports = conversationServices;

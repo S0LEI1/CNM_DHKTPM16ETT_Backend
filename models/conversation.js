@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
+const ObjectId = require("mongoose").Types.ObjectId;
 const conversationSchema = new Schema(
   {
     leaderId: {
@@ -32,4 +33,10 @@ const conversationSchema = new Schema(
   { timeseries: true }
 );
 conversationSchema.index({ name: 'text' });
-module.exports = mongoose.model("Conversation", conversationSchema);
+const Conversation = mongoose.model("Conversation", conversationSchema);
+module.exports = Conversation;
+
+
+// conversationSchema.static.getListMemberById = async(conversationId) =>{
+
+// }
