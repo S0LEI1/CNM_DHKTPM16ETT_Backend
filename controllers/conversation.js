@@ -147,7 +147,7 @@ exports.deleteAllMessage = async(req, res, next) =>{
   const conversationId = req.params.conversationId;
   try {
     await messageServices.deleteAllMessage(conversationId, userId);
-    res.status(500).json("Delete all message success")
+    res.status(200).json("Delete all message success")
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
