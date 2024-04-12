@@ -56,7 +56,7 @@ exports.createTextMessage = async (req, res, next) => {
         content: content,
         fileUrls: fileUrls,
         type: "TEXTANDFILE",
-        conversationId: conversationId
+        conversationId: conversationId,
       });
     } else {
       const errors = validate.content(content);
@@ -94,7 +94,10 @@ exports.createTextMessage = async (req, res, next) => {
       conversation,
     });
   } catch (error) {
-    console.log(error);
+    if (!error.statusCode) {
+      error.statusCode === 500;
+    }
+    next(error);
   }
 };
 
@@ -151,30 +154,41 @@ exports.createFileMessage = async (req, res, next) => {
       message: message,
     });
   } catch (error) {
-    console.log(error);
+    if (!error.statusCode) {
+      error.statusCode === 500;
+    }
+    next(error);
   }
 };
 exports.deleteMessage = async (req, res, next) => {
   const messageId = req.params.messageId;
-  const conversationId = req.body.conversationId;
   const userId = req.userId;
   try {
-    const message = await Message.findById(messageId);
-    if (!message) {
-      return res.status(404).json({ message: "Message not found" });
+    const { conversationId } =
+      await messageServices.deleteMessageById(userId, messageId);
+      io.getIO().emit("message", {
+        action: "delete",
+        conversationId
+      });
+      res.status(200).json({message:"Delete success"})
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode === 500;
     }
-    if(message.senderId != userId){
-        return res.status(500).json({})
-    }else{
-        message.deleteOne();
-        return io.getIO().emit("delete-message", {
-            action: "delete",
-            message: {
-              ...message._doc,
-              conversationId,
-              // message
-            },
-          });
-    }
-  } catch (error) {}
+    next(error);
+  }
 };
+
+exports.deleteOnlyByMe = async(req, res, next) =>{
+  const userId = req.userId;
+  const messageId = req.params.messageId;
+  try {
+    await messageServices.deleteOnlyByMe(userId, messageId);
+    res.status(200).json({message:"Successful recall"});
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode === 500;
+    }
+    next(error);
+  }
+}

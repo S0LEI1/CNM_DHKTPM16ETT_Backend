@@ -13,13 +13,17 @@ router.get("/", isAuth, conversationController.getListConversation);
 router.get('/:conversationId',isAuth, conversationController.getConversation);
 
 router.post("/single/:receiverId", isAuth, conversationController.createSingleConversation);
-router.delete("/:conversationId", isAuth, conversationController.deleteConversation);
 router.post("/group", isAuth, upload.singleUploadMiddleware, conversationController.createGroupConversation);
-
+router.delete("/group/:conversationId", isAuth, conversationController.deleteGroupConversation);
 // member
 
 router.get("/member/:conversationId", isAuth, memberController.getList);
 router.post("/member/:conversationId", isAuth, memberController.addMember);
 router.delete("/member/:conversationId", isAuth, memberController.deleteMember)
 router.delete("/member/leave/:conversationId", isAuth, memberController.leaveGroup);
+
+
+//message
+router.delete("/message/:conversationId", isAuth, conversationController.deleteAllMessage);
+
 module.exports = router;

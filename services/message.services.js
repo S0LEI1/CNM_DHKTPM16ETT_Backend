@@ -1,3 +1,4 @@
+const Member = require("../models/member");
 const Message = require("../models/message");
 const { uploadFileToS3 } = require("./upload_file");
 const IMAGE_TYPE_MATCH = ["image/png", "image/jpeg", "image/jpg", "image/gif"];
@@ -21,9 +22,14 @@ const fileType = {
   VIDEO: "video",
 };
 const messageServices = {
-  getMessages: async (consId) => {
+  getMessages: async (consId, userId) => {
     const messages = await Message.find(
-      {conversationId: consId},
+      {
+        conversationId: consId,
+        deletedUserIds: {
+          $nin: [userId],
+        },
+      },
       {
         _id: 1,
         content: 1,
@@ -31,7 +37,8 @@ const messageServices = {
         senderName: 1,
         createdAt: 1,
         updatedAt: 1,
-        view:1
+        isDeleted: 1,
+        deletedUserIds: 1,
       }
     ).sort({ createdAt: -1 });
     return messages;
@@ -65,6 +72,35 @@ const messageServices = {
       return null;
     }
   },
-  createMessage: () => {},
+  deleteMessageById: async (userId, messageId) => {
+    const message = await Message.findById(messageId);
+    const conversationId = message.conversationId;
+    if (!message) throw new Error("Message not found");
+    if (message.senderId != userId)
+      throw new Error("You not permission delete message");
+    await Message.updateOne({ _id: messageId }, { isDeleted: true });
+    return { conversationId };
+  },
+  deleteOnlyByMe: async (userId, messageId) =>{
+    const message = await Message.findById(messageId);
+    const {isDeleted, deletedUserIds} = message;
+    if(isDeleted) return;
+    const index = deletedUserIds.findIndex((id)=> id === userId);
+    if(index != -1) return ;
+    await Message.updateOne({_id: messageId}, {$push:{deletedUserIds: userId}});
+  },
+  deleteAllMessage: async(conversationId, userId) =>{
+    const member = await Member.findOne({conversationId: conversationId, userId: userId});
+    if(!member) throw new Error("Conversation not found");
+    await Message.updateMany(
+      {
+        conversationId: conversationId,
+        deletedUserIds:{$nin:[userId]}
+      },
+      {
+        $push: {deletedUserIds: userId}
+      }
+    )
+  }
 };
 module.exports = messageServices;

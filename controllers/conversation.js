@@ -111,29 +111,6 @@ exports.createSingleConversation = async (req, res, next) => {
     next(error);
   }
 };
-exports.deleteConversation = async (req, res, next) => {
-  const userId = req.userId;
-  const conversationId = req.params.conversationId;
-  try {
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(500).json({ message: USER_NOT_FOUND_ERR });
-    }
-    const cons = await Conversation.findById(conversationId);
-    if (!cons) {
-      return res.status(404).json({ message: CON_NOT_FOUND_ERR });
-    }
-    await userService.removeConversation(user._id, cons._id);
-    await user.save();
-    res.status(200).json({ message: DELETE_CHAT });
-  } catch (error) {
-    if (!error.statusCode) {
-      error.statusCode = 500;
-    }
-    next(error);
-  }
-};
-
 exports.createGroupConversation = async (req, res, next) => {
   const userId = req.userId;
   const chatName = req.body.chatName;
@@ -164,4 +141,32 @@ exports.createGroupConversation = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.deleteAllMessage = async(req, res, next) =>{
+  const userId = req.userId;
+  const conversationId = req.params.conversationId;
+  try {
+    await messageServices.deleteAllMessage(conversationId, userId);
+    res.status(500).json("Delete all message success")
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+}
+
+exports.deleteGroupConversation = async(req, res, next) =>{
+  const userId = req.userId;
+  const conversationId = req.params.conversationId;
+  try {
+    await conversationServices.deleteGroupConversation(conversationId, userId);
+    res.status(200).json("Delete conversation success")
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  } 
+}
 

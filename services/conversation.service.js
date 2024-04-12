@@ -2,6 +2,7 @@ const Conversation = require("../models/conversation");
 const Member = require("../models/member");
 const Message = require("../models/message");
 const User = require("../models/user");
+const messageUtils = require("../utils/messageUtils");
 const groupConversationServices = require("./group.conversation.service");
 const messageServices = require("./message.services");
 const singleConversationServices = require("./single.conversation.service");
@@ -147,14 +148,25 @@ const conversationServices = {
       } else if (conversation.type === "GROUP") {
         nameAndAvatar = await groupConversationServices.getGroupConversation(consId);
       }
-      const messages = await messageServices.getMessages(consId, true);
-      return { conversation, nameAndAvatar, messages };
+      const messagesData = await messageServices.getMessages(consId, userId);
+      let messages = messagesData.map((msg)=> messageUtils.convertMessage(msg));
+      return { conversation, nameAndAvatar,messages: messages };
     } catch (error) {
       throw error;
     }
   },
   updateLeader: async (conversationId, userId, newLeaderId) =>{
 
+  },
+  deleteGroupConversation: async (conversationId, userId) =>{
+    const conversation = await Conversation.findById(conversationId);
+    if(!conversation) throw new Error("Conversation not found");
+    if(conversation.type ==="SINGLE" || conversation.leaderId != userId){
+      throw new Error("Not permission delete group");
+    }
+    await Member.deleteMany({conversationId: conversationId});
+    await Message.deleteMany({conversationId: conversationId});
+    await Conversation.deleteOne({conversationId: conversationId});
   }
 };
 
