@@ -77,7 +77,7 @@ exports.leaveGroup = async(req, res, next) =>{
     io.getIO().emit("update-member", conversationId, {
       action: "update",
     });
-    res.status(200).json();
+    res.status(200).json("Leave group");
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode === 500;

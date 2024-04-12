@@ -37,8 +37,8 @@ const memberValidate = {
   validateLeaveGroup: async(conversationId, userId) =>{
     const conversation = await Conversation.findOne({_id: conversationId, members:{$in: [userId]}});
     if(!conversation) throw new Error("Conversation not found");
-    if(conversation.type ==="SINGLE" || conversation.leaderId === userId){
-      throw new Error("Can not leave group")
+    if(conversation.type ==="SINGLE" || conversation.leaderId.toString() === userId){
+      throw new Error("Leader can not leave group")
     }
   }
 };
