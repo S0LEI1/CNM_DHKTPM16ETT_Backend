@@ -24,7 +24,9 @@ const memberValidate = {
     if (!conversation) throw new Error("Conversation not found");
     if (conversation.type === "SINGLE")
       throw new Error("Can not delete member, only group");
-    if(conversation.leaderId !== userId)
+    console.log(conversation.leaderId);
+    console.log(userId);
+    if(conversation.leaderId.toString() !== userId)
       throw new Error("Only leader delete member");
     const isExistMember = await Member.findOne({
       conversationId: conversationId,
