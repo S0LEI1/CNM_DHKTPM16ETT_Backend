@@ -56,7 +56,7 @@ exports.createTextMessage = async (req, res, next) => {
         content: content,
         fileUrls: fileUrls,
         type: "TEXTANDFILE",
-    
+        conversationId: conversationId
       });
     } else {
       const errors = validate.content(content);

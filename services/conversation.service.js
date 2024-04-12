@@ -27,7 +27,8 @@ const conversationServices = {
     const group = new Conversation({
       chatName: name,
       leaderId: userId,
-      type:"GROUP"
+      type:"GROUP",
+      members: [userId,...memberIds]
     });
     if (file) {
       const fileUrl = await uploadFileToS3("conversations", group._id, "image", file);
@@ -39,7 +40,6 @@ const conversationServices = {
         conversationId: groupId,
         userId: userIds[index],
       })
-      group.members.push(member);
       await member.save();
     }
     await group.save();

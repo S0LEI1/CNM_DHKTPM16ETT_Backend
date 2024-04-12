@@ -21,7 +21,6 @@ const conversationSchema = new Schema(
     members:[
       {
         type: Schema.Types.ObjectId,
-        ref:"Member"
       }
     ],
     type: {
