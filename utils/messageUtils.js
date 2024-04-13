@@ -1,5 +1,6 @@
 const messageUtils = {
     convertMessage:  (message) =>{
+        console.log(message);
         const messageId = message.id;
         const isDeleted = message.isDeleted;
         if(isDeleted){
@@ -11,7 +12,15 @@ const messageUtils = {
             }
         }
         return {
-            message
+            _id: message._id,
+            content: message.content,
+            conversationId: message.conversationId,
+            senderId: message.senderId,
+            senderName: message.senderName,
+            isDeleted: message.isDeleted,
+            deletedUserIds: message.deletedUserIds,
+            createdAt: message.createdAt,
+            updatedAt: message.updatedAt
         }
     }
 }

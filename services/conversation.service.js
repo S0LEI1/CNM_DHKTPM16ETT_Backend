@@ -149,8 +149,11 @@ const conversationServices = {
         nameAndAvatar = await groupConversationServices.getGroupConversation(consId);
       }
       const messagesData = await messageServices.getMessages(consId, userId);
-      let messages = messagesData.map((msg)=> messageUtils.convertMessage(msg));
-      return { conversation, nameAndAvatar,messages: messages };
+      let messages=[] ;
+      for (let index = 0; index < messagesData.length; index++) {
+        messages.push(messageUtils.convertMessage(messagesData[index]));     
+      }
+      return { conversation, nameAndAvatar,messages };
     } catch (error) {
       throw error;
     }
