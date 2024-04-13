@@ -18,6 +18,7 @@ const { CREATE_CHAT, DELETE_CHAT } = require("../success");
 // const singChatServices = require("../services/single_chat.services");
 const { avatar } = require("../utils/validate");
 const memberServices = require("../services/member.services");
+const NotFoundError = require("../exception/NotFoundErr");
 
 exports.getListConversation = async (req, res, next) => {
   const userId = req.userId;
@@ -170,5 +171,23 @@ exports.deleteGroupConversation = async(req, res, next) =>{
     next(error);
   } 
 }
-
+exports.updateGroupName = async(req, res, next) =>{
+  const userId = req.userId;
+  const conversationId = req.params.conversationId;
+  const name = req.body.name;
+  try {
+    if(!name) throw new NotFoundError("Name ");
+    const conversation = await conversationServices.updateGroupName(conversationId, userId, name);
+    io.getIO().emit("update-group-name", {
+      action: "update",
+      conversationId
+    });
+    res.status(200).json({message:"Update name success", conversation});
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+}
 

@@ -27,16 +27,21 @@ const conversationServices = {
       return new Error("Not enough members to create a group");
     const userIds = [userId, ...memberIds];
     console.log(userIds);
-    const user = await User.find({_id:{$in:userIds}});
+    const user = await User.find({ _id: { $in: userIds } });
     if (!user) return new Error("User not found");
     const group = new Conversation({
       chatName: name,
       leaderId: userId,
-      type:"GROUP",
-      members: [userId,...memberIds]
+      type: "GROUP",
+      members: [userId, ...memberIds],
     });
     if (file) {
-      const fileUrl = await uploadFileToS3("conversations", group._id, "image", file);
+      const fileUrl = await uploadFileToS3(
+        "conversations",
+        group._id,
+        "image",
+        file
+      );
       group.avatar = fileUrl;
     }
     const groupId = group._id;
@@ -44,12 +49,11 @@ const conversationServices = {
       const member = new Member({
         conversationId: groupId,
         userId: userIds[index],
-      })
+      });
       await member.save();
     }
     await group.save();
     return group;
-
   },
   createSingleConversation: async (userId1, userId2) => {
     try {
@@ -127,9 +131,16 @@ const conversationServices = {
           userId
         );
       } else if (conversation.type === "GROUP") {
-        nameAndAvatar = await groupConversationServices.getNameAndAvatar(conversation);
+        nameAndAvatar = await groupConversationServices.getNameAndAvatar(
+          conversation
+        );
       }
-      return { conversationId, ...nameAndAvatar, lastMessage, type: conversation.type };
+      return {
+        conversationId,
+        ...nameAndAvatar,
+        lastMessage,
+        type: conversation.type,
+      };
     } catch (error) {
       throw error;
     }
@@ -145,32 +156,48 @@ const conversationServices = {
           userId
         );
       } else if (conversation.type === "GROUP") {
-        nameAndAvatar = await groupConversationServices.getGroupConversation(consId);
+        nameAndAvatar = await groupConversationServices.getGroupConversation(
+          consId
+        );
       }
       const messagesData = await messageServices.getMessages(consId, userId);
-      let messages=[] ;
+      let messages = [];
       for (let index = 0; index < messagesData.length; index++) {
-        messages.push(messageUtils.convertMessage(messagesData[index]));     
+        messages.push(messageUtils.convertMessage(messagesData[index]));
       }
-      return { conversation, nameAndAvatar,messages };
+      return { conversation, nameAndAvatar, messages };
     } catch (error) {
       throw error;
     }
   },
-  updateLeader: async (conversationId, userId, newLeaderId) =>{
-
-  },
-  deleteGroupConversation: async (conversationId, userId) =>{
+  updateLeader: async (conversationId, userId, newLeaderId) => {},
+  deleteGroupConversation: async (conversationId, userId) => {
     const conversation = await Conversation.findById(conversationId);
-    if(!conversation) throw new Error("Conversation not found");
-    if(conversation.type ==="SINGLE" || conversation.leaderId != userId){
+    if (!conversation) throw new Error("Conversation not found");
+    if (conversation.type === "SINGLE" || conversation.leaderId != userId) {
       throw new Error("Not permission delete group");
     }
-    await Member.deleteMany({conversationId: conversationId});
-    await Message.deleteMany({conversationId: conversationId});
-    await Conversation.deleteOne({conversationId: conversationId});
+    await Member.deleteMany({ conversationId: conversationId });
+    await Message.deleteMany({ conversationId: conversationId });
+    await Conversation.deleteOne({ conversationId: conversationId });
   },
-  
+  updateGroupName: async (conversationId, userId, name) => {
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      members: { $in: [userId] },
+    });
+    if (!conversation) throw new NotFoundError("Conversation");
+    if (conversation.type === "GROUP") {
+      await Conversation.updateOne(
+        { _id: conversationId },
+        { chatName: name }
+        );
+    } else if (conversation.type === "SINGLE"){
+      throw new MyError("Functionality is not yet developed");
+    }else{
+      throw new MyError("An error occurred")
+    }
+  },
 };
 
 module.exports = conversationServices;
