@@ -17,6 +17,7 @@ const messageServices = require("../services/message.services");
 const { CREATE_CHAT, DELETE_CHAT } = require("../success");
 // const singChatServices = require("../services/single_chat.services");
 const { avatar } = require("../utils/validate");
+const memberServices = require("../services/member.services");
 
 exports.getListConversation = async (req, res, next) => {
   const userId = req.userId;
@@ -169,4 +170,5 @@ exports.deleteGroupConversation = async(req, res, next) =>{
     next(error);
   } 
 }
+
 

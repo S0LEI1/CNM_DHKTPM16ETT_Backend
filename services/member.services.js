@@ -2,6 +2,8 @@ const Member = require("../models/member");
 const memberValidate = require("../validate/memberValidate");
 const ObjectId = require("mongoose").Types.ObjectId;
 const Conversation = require("../models/conversation");
+const NotFoundError = require("../exception/NotFoundErr");
+const MyError = require("../exception/MyError");
 const memberServices = {
   createMember: async (conversationId, userId) => {
     const member = new Member({
@@ -89,6 +91,22 @@ const memberServices = {
       { $pull: { members: userId } }
     );
     await Member.deleteOne({ conversationId: conversationId, userId: userId });
+    return conversation;
+  },
+  updateLeader: async (conversationId, userId, newLeaderId) => {
+    const conversation = await Conversation.find({
+      _id: conversationId,
+      members: { $in: [userId] },
+    });
+    if(!conversation) throw new NotFoundError("Conversation");
+    if(userId === newLeaderId) throw new MyError("You are leader");
+    const member = await Member.findOne({conversationId: conversationId, userId: newLeaderId});
+
+    if(!member) throw new MyError("Member not in group");
+    await Conversation.updateOne(
+      {_id: conversationId},
+      {leaderId: newLeaderId}
+    )
     return conversation;
   },
 };

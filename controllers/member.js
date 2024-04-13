@@ -85,3 +85,21 @@ exports.leaveGroup = async(req, res, next) =>{
     next(error);
   }
 }
+
+exports.updateLeader = async (req, res, next) =>{
+  const userId = req.userId;
+  const {conversationId, newLeaderId} = req.params;
+  try {
+    const conversation = await memberServices.updateLeader(conversationId, userId, newLeaderId);
+    io.getIO().emit("update-leader", {
+      action: "update",
+      conversation
+    });
+    res.status(200).json("Update leader success");
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+}

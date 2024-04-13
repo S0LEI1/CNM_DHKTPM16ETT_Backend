@@ -37,7 +37,7 @@ const messageServices = {
         content: 1,
         senderId: 1,
         senderName: 1,
-        senderAvatar:1,
+        senderAvatar: 1,
         createdAt: 1,
         updatedAt: 1,
         isDeleted: 1,
@@ -84,46 +84,58 @@ const messageServices = {
     await Message.updateOne({ _id: messageId }, { isDeleted: true });
     return { conversationId };
   },
-  deleteOnlyByMe: async (userId, messageId) =>{
+  deleteOnlyByMe: async (userId, messageId) => {
     const message = await Message.findById(messageId);
-    const {isDeleted, deletedUserIds} = message;
-    if(isDeleted) return;
-    const index = deletedUserIds.findIndex((id)=> id === userId);
-    if(index != -1) return ;
-    await Message.updateOne({_id: messageId}, {$push:{deletedUserIds: userId}});
+    const { isDeleted, deletedUserIds } = message;
+    if (isDeleted) return;
+    const index = deletedUserIds.findIndex((id) => id === userId);
+    if (index != -1) return;
+    await Message.updateOne(
+      { _id: messageId },
+      { $push: { deletedUserIds: userId } }
+    );
   },
-  deleteAllMessage: async(conversationId, userId) =>{
-    const member = await Member.findOne({conversationId: conversationId, userId: userId});
-    if(!member) throw new Error("Conversation not found");
+  deleteAllMessage: async (conversationId, userId) => {
+    const member = await Member.findOne({
+      conversationId: conversationId,
+      userId: userId,
+    });
+    if (!member) throw new Error("Conversation not found");
     await Message.updateMany(
       {
         conversationId: conversationId,
-        deletedUserIds:{$nin:[userId]}
+        deletedUserIds: { $nin: [userId] },
       },
       {
-        $push: {deletedUserIds: userId}
+        $push: { deletedUserIds: userId },
       }
-    )
+    );
   },
-  shareMessage: async(conversationId, messageId, userId) =>{
-    const message= await Message.findById(messageId);
-    if(!message) throw new NotFoundError("Message");
-    const conversation = await Conversation.find({_id: message.conversationId, members:{$in: [userId]}});
-    if(!conversation) throw new NotFoundError("Conversation");
-    const shareConversation = await Conversation.find({_id: conversationId, members:{$in: [userId]}});
-    if(!shareConversation) throw new NotFoundError("Conversation share");
+  shareMessage: async (conversationId, messageId, userId) => {
+    const message = await Message.findById(messageId);
+    if (!message) throw new NotFoundError("Message");
+    const conversation = await Conversation.find({
+      _id: message.conversationId,
+      members: { $in: [userId] },
+    });
+    if (!conversation) throw new NotFoundError("Conversation");
+    const shareConversation = await Conversation.find({
+      _id: conversationId,
+      members: { $in: [userId] },
+    });
+    if (!shareConversation) throw new NotFoundError("Conversation share");
     const shareMessage = new Message({
       content: message.content,
       userId: userId,
       conversationId: conversationId,
-      type: message.type
+      type: message.type,
     });
     const saveMessage = await shareMessage.save();
     await Conversation.updateOne(
-      {_id: conversationId},
-      {lastMessages: saveMessage._id}
+      { _id: conversationId },
+      { lastMessages: saveMessage._id }
     );
     return saveMessage;
-  }
+  },
 };
 module.exports = messageServices;
