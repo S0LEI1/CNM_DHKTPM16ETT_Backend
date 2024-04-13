@@ -40,6 +40,18 @@ const memberValidate = {
     if(conversation.type ==="SINGLE" || conversation.leaderId.toString() === userId){
       throw new Error("Leader can not leave group")
     }
+  },
+  validateMember: async(conversationId, friend) =>{
+    const _id = friend._id;
+    const name = friend.name;
+    const avatar = friend.avatar;
+    const member = await Member.findOne({
+      conversationId: conversationId,
+      userId: _id
+    })
+    if(!member) 
+      return {_id,name,avatar, isExistInGroup: false}
+    return {_id,name,avatar, isExistInGroup: true};
   }
 };
 

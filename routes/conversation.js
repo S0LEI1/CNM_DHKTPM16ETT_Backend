@@ -5,7 +5,7 @@ const isAuth = require("../middleware/is-auth");
 
 const conversationController = require("../controllers/conversation");
 const memberController = require("../controllers/member");
-
+const friendController = require("../controllers/friend");
 const upload = require("../middleware/upload");
 // /conversation/
 router.get("/", isAuth, conversationController.getListConversation);
@@ -21,7 +21,10 @@ router.get("/member/:conversationId", isAuth, memberController.getList);
 router.post("/member/:conversationId", isAuth, memberController.addMember);
 router.delete("/member/:conversationId", isAuth, memberController.deleteMember)
 router.delete("/member/leave/:conversationId", isAuth, memberController.leaveGroup);
+
 router.put("/:conversationId/member/:newLeaderId", isAuth, memberController.updateLeader);
+
+router.get("/:conversationId/friend", isAuth, friendController.getListFriendByMemberId);
 
 
 //message

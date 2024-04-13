@@ -23,7 +23,7 @@ memberSchema.statics.getByConversationIdAndUserId = async (
         userId,
     });
 
-    if (!member) throw new Error("Conversation not found");
+    if (!member) throw  new Error("Conversation not found");
 
     return member;
 };

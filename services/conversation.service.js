@@ -1,8 +1,11 @@
+const MyError = require("../exception/MyError");
+const NotFoundError = require("../exception/NotFoundErr");
 const Conversation = require("../models/conversation");
 const Member = require("../models/member");
 const Message = require("../models/message");
 const User = require("../models/user");
 const messageUtils = require("../utils/messageUtils");
+const friendServices = require("./friend.services");
 const groupConversationServices = require("./group.conversation.service");
 const messageServices = require("./message.services");
 const singleConversationServices = require("./single.conversation.service");
@@ -166,7 +169,8 @@ const conversationServices = {
     await Member.deleteMany({conversationId: conversationId});
     await Message.deleteMany({conversationId: conversationId});
     await Conversation.deleteOne({conversationId: conversationId});
-  }
+  },
+  
 };
 
 module.exports = conversationServices;

@@ -213,3 +213,16 @@ exports.getListAddFriendReqs = async (req, res, next) => {
     next(error);
   }
 };
+exports.getListFriendByMemberId = async(req, res, next) =>{
+  const userId = req.userId;
+  const conversationId = req.params.conversationId;
+  try {
+    const friends = await friendServices.getListFriendByMemberId(conversationId, userId);
+    res.status(200).json({friends});
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+}
