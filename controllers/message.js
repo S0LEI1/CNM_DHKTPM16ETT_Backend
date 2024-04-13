@@ -192,3 +192,17 @@ exports.deleteOnlyByMe = async(req, res, next) =>{
     next(error);
   }
 }
+exports.shareMessage = async(req, res, next) =>{
+  const messageId = req.params.messageId;
+  const conversationId = req.params.conversationId;
+  const userId = req.userId;
+  try {
+    const shareMessage = await messageServices.shareMessage(conversationId, messageId, userId);
+    res.status(200).json({shareMessage});
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode === 500;
+    }
+    next(error);
+  }
+}

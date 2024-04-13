@@ -1,3 +1,5 @@
+const NotFoundError = require("../exception/NotFoundErr");
+const Conversation = require("../models/conversation");
 const Member = require("../models/member");
 const Message = require("../models/message");
 const { uploadFileToS3 } = require("./upload_file");
@@ -101,6 +103,26 @@ const messageServices = {
         $push: {deletedUserIds: userId}
       }
     )
+  },
+  shareMessage: async(conversationId, messageId, userId) =>{
+    const message= await Message.findById(messageId);
+    if(!message) throw new NotFoundError("Message");
+    const conversation = await Conversation.find({_id: message.conversationId, members:{$in: [userId]}});
+    if(!conversation) throw new NotFoundError("Conversation");
+    const shareConversation = await Conversation.find({_id: conversationId, members:{$in: [userId]}});
+    if(!shareConversation) throw new NotFoundError("Conversation share");
+    const shareMessage = new Message({
+      content: message.content,
+      userId: userId,
+      conversationId: conversationId,
+      type: message.type
+    });
+    const saveMessage = await shareMessage.save();
+    await Conversation.updateOne(
+      {_id: conversationId},
+      {lastMessages: saveMessage._id}
+    );
+    return saveMessage;
   }
 };
 module.exports = messageServices;
