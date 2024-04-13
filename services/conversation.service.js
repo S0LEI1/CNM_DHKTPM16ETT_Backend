@@ -126,7 +126,7 @@ const conversationServices = {
       } else if (conversation.type === "GROUP") {
         nameAndAvatar = await groupConversationServices.getNameAndAvatar(conversation);
       }
-      return { conversationId, ...nameAndAvatar, lastMessage };
+      return { conversationId, ...nameAndAvatar, lastMessage, type: conversation.type };
     } catch (error) {
       throw error;
     }
