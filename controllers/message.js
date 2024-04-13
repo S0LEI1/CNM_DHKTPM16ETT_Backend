@@ -198,6 +198,11 @@ exports.shareMessage = async(req, res, next) =>{
   const userId = req.userId;
   try {
     const shareMessage = await messageServices.shareMessage(conversationId, messageId, userId);
+    io.getIO().emit("share-message", {
+      action: "create",
+      conversationId
+    });
+    res.status(200).json({message:"Delete success"})
     res.status(200).json({shareMessage});
   } catch (error) {
     if (!error.statusCode) {
