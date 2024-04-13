@@ -1,6 +1,5 @@
 const messageUtils = {
     convertMessage:  (message) =>{
-        console.log(message);
         const messageId = message.id;
         const isDeleted = message.isDeleted;
         if(isDeleted){
