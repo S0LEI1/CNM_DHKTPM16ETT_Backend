@@ -12,6 +12,9 @@ const messageSchema = new Schema(
       type: String,
       require: true,
     },
+    senderAvatar:{
+      type: String
+    },
     conversationId: {
       type: Schema.Types.ObjectId,
       require: true,

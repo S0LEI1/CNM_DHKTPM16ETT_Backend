@@ -53,6 +53,7 @@ exports.createTextMessage = async (req, res, next) => {
       message = new Message({
         senderId: senderId,
         senderName: user.name,
+        senderAvatar: user.avatar,
         content: content,
         fileUrls: fileUrls,
         type: "TEXTANDFILE",
@@ -68,12 +69,10 @@ exports.createTextMessage = async (req, res, next) => {
       message = new Message({
         senderId: senderId,
         senderName: user.name,
-        //   view: view,
+        senderAvatar: user.avatar,
         content: content,
         conversationId: conversationId,
-        // view:{
-        //     in
-        // }
+        
       });
     }
     await message.save();
@@ -85,7 +84,6 @@ exports.createTextMessage = async (req, res, next) => {
         ...message._doc,
         creator: { _id: senderId, name: user.name },
         conversationId,
-        // message
       },
     });
     res.status(201).json({
@@ -104,14 +102,9 @@ exports.createTextMessage = async (req, res, next) => {
 exports.createFileMessage = async (req, res, next) => {
   const conversationId = req.params.conversationId;
   const senderId = req.userId;
-  //   const receiverId = req.params.receiverId;
   const files = req.files;
   const user = await User.findById(senderId);
-  //   const view = {
-  //     inbox: false,
-  //     outbox: true,
-  //     archive: false,
-  //   };
+  
   try {
     const conversation = await Conversation.findById(conversationId);
     if (!conversation) {
@@ -133,6 +126,7 @@ exports.createFileMessage = async (req, res, next) => {
     const message = new Message({
       senderId: senderId,
       senderName: user.name,
+      senderAvatar: user.avatar,
       //   view: view,
       fileUrls: fileUrls,
       type: "FILE",

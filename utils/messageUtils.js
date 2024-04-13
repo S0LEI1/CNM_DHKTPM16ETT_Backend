@@ -17,6 +17,7 @@ const messageUtils = {
             conversationId: message.conversationId,
             senderId: message.senderId,
             senderName: message.senderName,
+            senderAvatar: message.avatar,
             isDeleted: message.isDeleted,
             deletedUserIds: message.deletedUserIds,
             createdAt: message.createdAt,

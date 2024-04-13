@@ -37,6 +37,7 @@ const messageServices = {
         content: 1,
         senderId: 1,
         senderName: 1,
+        senderAvatar:1,
         createdAt: 1,
         updatedAt: 1,
         isDeleted: 1,

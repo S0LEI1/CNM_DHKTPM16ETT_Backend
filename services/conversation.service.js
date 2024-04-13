@@ -135,10 +135,6 @@ const conversationServices = {
     try {
       const member = await Member.getByConversationIdAndUserId(consId, userId);
       const conversation = await Conversation.findById(consId);
-      // const lastMessageId = conversation.lastMessages;
-      // const lastMessage = lastMessageId
-      //   ? await Message.findById(lastMessageId)
-      //   : null;
       let nameAndAvatar;
       if (conversation.type === "SINGLE") {
         nameAndAvatar = await singleConversationServices.getSingleConversation(
