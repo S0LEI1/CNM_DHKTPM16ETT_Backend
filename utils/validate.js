@@ -134,7 +134,7 @@ const validate = {
   },
   avatar: (file) => {
     const errors = [];
-    if (FILE_TYPE_MATCH.indexOf(file.mimetype) === -1) {
+    if (AVATAR_TYPE_MATCH.indexOf(file.mimetype) === -1) {
       errors.push(`${file?.originalname} is invalid`);
     }
     if (errors?.length > 0) return errors;

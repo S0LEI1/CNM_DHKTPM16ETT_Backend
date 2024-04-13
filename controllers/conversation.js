@@ -19,7 +19,7 @@ const { CREATE_CHAT, DELETE_CHAT } = require("../success");
 const { avatar } = require("../utils/validate");
 const memberServices = require("../services/member.services");
 const NotFoundError = require("../exception/NotFoundErr");
-
+const validate = require("../utils/validate")
 exports.getListConversation = async (req, res, next) => {
   const userId = req.userId;
   try {
@@ -183,6 +183,21 @@ exports.updateGroupName = async(req, res, next) =>{
       conversationId
     });
     res.status(200).json({message:"Update name success", conversation});
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+}
+
+exports.updateGroupAvatar = async(req, res, next) =>{
+  const conversationId = req.params.conversationId;
+  const userId = req.userId;
+  const image = req.file;
+  try {
+    const imageUrl = await conversationServices.updateGroupAvatar(conversationId, userId, image);
+    res.status(200).json({message:"Update avatar success", imageUrl})
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;

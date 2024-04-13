@@ -17,7 +17,7 @@ router.post("/group", isAuth, upload.singleUploadMiddleware, conversationControl
 router.delete("/group/:conversationId", isAuth, conversationController.deleteGroupConversation);
 
 router.patch("/rename/:conversationId", isAuth, conversationController.updateGroupName);
-
+router.patch("/avatar/:conversationId", isAuth,upload.singleUploadMiddleware, conversationController.updateGroupAvatar);
 // member
 
 router.get("/member/:conversationId", isAuth, memberController.getList);

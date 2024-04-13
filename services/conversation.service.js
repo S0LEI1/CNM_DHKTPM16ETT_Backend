@@ -10,6 +10,15 @@ const groupConversationServices = require("./group.conversation.service");
 const messageServices = require("./message.services");
 const singleConversationServices = require("./single.conversation.service");
 const { uploadFileToS3 } = require("./upload_file");
+const validate = require("../utils/validate");
+const s3Services = require("./s3service");
+const type = {
+  USERS: "users",
+  CONVERSATIONS: "conversations",
+};
+const fileType = {
+  AVATAR: "avatar",
+};
 const conversationServices = {
   getConversations: async (user) => {
     try {
@@ -187,16 +196,35 @@ const conversationServices = {
       members: { $in: [userId] },
     });
     if (!conversation) throw new NotFoundError("Conversation");
-    if (conversation.type === "GROUP") {
-      await Conversation.updateOne(
-        { _id: conversationId },
-        { chatName: name }
-        );
-    } else if (conversation.type === "SINGLE"){
+
+    if (conversation.type === "SINGLE") {
       throw new MyError("Functionality is not yet developed");
-    }else{
-      throw new MyError("An error occurred")
     }
+    await Conversation.updateOne({ _id: conversationId }, { chatName: name });
+  },
+  updateGroupAvatar: async (conversationId, userId, file) => {
+    const error = validate.avatar(file);
+    if (error) {
+      return res.status(500).json({ message: "Validate fail", error: error });
+    }
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      members: { $in: [userId] },
+    });
+    if (!conversation) throw new NotFoundError("Conversation");
+    if (conversation.type === "SINGLE")
+      throw new MyError("Update avatar only group");
+    if (conversation.avatar) {
+      await s3Services.deleteFile(conversation.avatar);
+    }
+    const imageUrl = await uploadFileToS3(
+      type.USERS,
+      conversation._id,
+      fileType.AVATAR,
+      file
+    );
+    await Conversation.updateOne({ _id: conversationId }, { avatar: imageUrl });
+    return imageUrl;
   },
 };
 
