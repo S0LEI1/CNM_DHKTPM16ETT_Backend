@@ -42,7 +42,7 @@ const messageServices = {
         isDeleted: 1,
         deletedUserIds: 1,
       }
-    ).sort({ createdAt: -1 });
+    ).sort({ createdAt: 1 });
     return messages;
   },
   uploadFile: async (folderName, file) => {
