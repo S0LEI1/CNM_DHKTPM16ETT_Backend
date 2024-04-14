@@ -1,28 +1,10 @@
+const MyError = require("../exception/MyError");
 const NotFoundError = require("../exception/NotFoundErr");
 const Conversation = require("../models/conversation");
 const Member = require("../models/member");
 const Message = require("../models/message");
-const { uploadFileToS3 } = require("./upload_file");
-const IMAGE_TYPE_MATCH = ["image/png", "image/jpeg", "image/jpg", "image/gif"];
-const FILE_TYPE_MATCH = [
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.ms-powerpoint",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "application/vnd.rar",
-  "application/zip",
-];
-const VIDEO_TYPE_MATCH = ["video/mp3", "video/mp4"];
-const type = {
-  USERS: "users",
-  CONVERSATIONS: "conversations",
-};
-const fileType = {
-  IMAGE: "image",
-  FILE: "file",
-  VIDEO: "video",
-};
+const messageValidate = require("../validate/messageValidate");
+const validate = require("../utils/validate");
 const messageServices = {
   getMessages: async (consId, userId) => {
     const messages = await Message.find(
@@ -46,43 +28,20 @@ const messageServices = {
     ).sort({ createdAt: 1 });
     return messages;
   },
-  uploadFile: async (folderName, file) => {
-    if (IMAGE_TYPE_MATCH.indexOf(file.mimetype)) {
-      return await uploadFileToS3(
-        type.CONVERSATIONS,
-        folderName,
-        fileType.IMAGE,
-        file
-      );
-    }
-    if (FILE_TYPE_MATCH.indexOf(file.mimetype)) {
-      return await uploadFileToS3(
-        type.CONVERSATIONS,
-        folderName,
-        fileType.FILE,
-        file
-      );
-    }
-    if (VIDEO_TYPE_MATCH.indexOf(file.mimetype)) {
-      return await uploadFileToS3(
-        type.CONVERSATIONS,
-        folderName,
-        fileType.VIDEO,
-        file
-      );
-    } else {
-      console.log("Invalid");
-      return null;
-    }
-  },
+
   deleteMessageById: async (userId, messageId) => {
     const message = await Message.findById(messageId);
     const conversationId = message.conversationId;
     if (!message) throw new Error("Message not found");
     if (message.senderId != userId)
       throw new Error("You not permission delete message");
-    await Message.updateOne({ _id: messageId }, { isDeleted: true });
-    return { conversationId };
+    const deleteMessage = await Message.findOneAndUpdate(
+      { _id: messageId },
+      { isDeleted: true },
+      { new: true }
+    );
+
+    return { deleteMessage, conversationId };
   },
   deleteOnlyByMe: async (userId, messageId) => {
     const message = await Message.findById(messageId);
@@ -136,6 +95,48 @@ const messageServices = {
       { lastMessages: saveMessage._id }
     );
     return saveMessage;
+  },
+  createFileMessage: async (conversationId, user, content, files) => {
+    const folderName = user._id;
+    const fileUrls = [];
+    for (let index = 0; index < files.length; index++) {
+      const error = validate.file(files[index]);
+      if (error) throw new MyError(error);
+      const url = await messageValidate.uploadFile(folderName, files[index]);
+      fileUrls.push(url);
+    }
+    const message = new Message({
+      senderId: user._id,
+      senderName: user.name,
+      senderAvatar: user.avatar,
+      content: content,
+      fileUrls: fileUrls,
+      type: "TEXTANDFILE",
+      conversationId: conversationId,
+    });
+    await message.save();
+    await Conversation.updateOne(
+      { _id: conversationId },
+      { lastMessages: message._id }
+    );
+    return message;
+  },
+  createTextMessage: async (conversationId, user, content) => {
+    const errors = validate.content(content);
+    if (errors) throw new MyError(errors);
+    const message = new Message({
+      senderId: user._id,
+      senderName: user.name,
+      senderAvatar: user.avatar,
+      content: content,
+      conversationId: conversationId,
+    });
+    await message.save();
+    await Conversation.updateOne(
+      { _id: conversationId },
+      { lastMessages: message._id }
+    );
+    return message;
   },
 };
 module.exports = messageServices;

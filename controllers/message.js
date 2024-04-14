@@ -24,7 +24,7 @@ const fileType = {
   IMAGE: "image",
   FILE: "file",
 };
-exports.createTextMessage = async (req, res, next) => {
+exports.createMessage = async (req, res, next) => {
   const conversationId = req.params.conversationId;
   const senderId = req.userId;
   //   const receiverId = req.params.receiverId;
@@ -33,56 +33,16 @@ exports.createTextMessage = async (req, res, next) => {
   
   try {
     const user = await User.findById(senderId);
-    const conversation = await Conversation.findOne(
-      {_id: conversationId,
-        members:{$in:[senderId]}
-      }
-    )
-    if (!conversation) {
-      return res.status(404).json({ message: "Conversation not found." });
-    }
+    const conversation = await conversationServices.getConversationByIdAndUserId(conversationId, senderId)
     var message;
     if (files) {
-      const folderName = user._id;
-      const fileUrls = [];
-      for (let index = 0; index < files.length; index++) {
-        const error = validate.file(files[index]);
-        if (error) {
-          return res
-            .status(500)
-            .json({ message: "Validate fail", error: error });
-        }
-        const url = await messageServices.uploadFile(folderName, files[index]);
-        fileUrls.push(url);
-      }
-      message = new Message({
-        senderId: senderId,
-        senderName: user.name,
-        senderAvatar: user.avatar,
-        content: content,
-        fileUrls: fileUrls,
-        type: "TEXTANDFILE",
-        conversationId: conversationId,
-      });
+      message = await messageServices.createFileMessage(conversationId, user, content, files);
     } else {
-      const errors = validate.content(content);
-      if (errors) {
-        return res
-          .status(500)
-          .json({ message: "Validate error", errors: errors });
-      }
-      message = new Message({
-        senderId: senderId,
-        senderName: user.name,
-        senderAvatar: user.avatar,
-        content: content,
-        conversationId: conversationId,
-        
-      });
+      message= await messageServices.createTextMessage(conversationId, user, content);
     }
     await message.save();
-    conversation.lastMessages = message._id;
-    await conversation.save();
+    // conversation.lastMessages = message._id;
+    // await conversation.save();
     io.getIO().emit("message", {
       action: "create",
       message: {
@@ -163,13 +123,12 @@ exports.deleteMessage = async (req, res, next) => {
   const messageId = req.params.messageId;
   const userId = req.userId;
   try {
-    const { conversationId } =
-      await messageServices.deleteMessageById(userId, messageId);
+     const {deleteMessage, conversationId} = await messageServices.deleteMessageById(userId, messageId);
       io.getIO().emit("message", {
         action: "delete",
         conversationId
       });
-      res.status(200).json({message:"Delete success"})
+      res.status(200).json({message:"Delete success", deleteMessage})
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode === 500;

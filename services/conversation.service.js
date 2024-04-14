@@ -226,6 +226,11 @@ const conversationServices = {
     await Conversation.updateOne({ _id: conversationId }, { avatar: imageUrl });
     return imageUrl;
   },
+  getConversationByIdAndUserId: async (conversationId, userId) =>{
+    const conversation = await Conversation.findOne({_id: conversationId, members:{$in:[userId]}});
+    if(!conversation) throw MyError("User not exist in group");
+    return conversation;
+  }
 };
 
 module.exports = conversationServices;

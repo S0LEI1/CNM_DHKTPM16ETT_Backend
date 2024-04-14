@@ -15,7 +15,6 @@ const conversationServices = require("../services/conversation.service");
 const userService = require("../services/user.services");
 const messageServices = require("../services/message.services");
 const { CREATE_CHAT, DELETE_CHAT } = require("../success");
-// const singChatServices = require("../services/single_chat.services");
 const { avatar } = require("../utils/validate");
 const memberServices = require("../services/member.services");
 const NotFoundError = require("../exception/NotFoundErr");
