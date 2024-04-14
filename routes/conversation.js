@@ -12,12 +12,18 @@ router.get("/", isAuth, conversationController.getListConversation);
 // /conversation/id
 router.get('/:conversationId',isAuth, conversationController.getConversation);
 
+//create
 router.post("/single/:receiverId", isAuth, conversationController.createSingleConversation);
 router.post("/group", isAuth, upload.singleUploadMiddleware, conversationController.createGroupConversation);
-router.delete("/group/:conversationId", isAuth, conversationController.deleteGroupConversation);
 
+router.delete("/group/:conversationId", isAuth, conversationController.deleteGroupConversation);
+// 
 router.patch("/rename/:conversationId", isAuth, conversationController.updateGroupName);
 router.patch("/avatar/:conversationId", isAuth,upload.singleUploadMiddleware, conversationController.updateGroupAvatar);
+
+// leader & deputy leader
+router.patch("/:conversationId/member/:newLeaderId", isAuth, memberController.updateLeader);
+router.patch("/:conversationId/deputy/:deputyLeaderId", isAuth, conversationController.addDeputyLeader);
 // member
 
 router.get("/member/:conversationId", isAuth, memberController.getList);
@@ -25,7 +31,6 @@ router.post("/member/:conversationId", isAuth, memberController.addMember);
 router.delete("/member/:conversationId", isAuth, memberController.deleteMember)
 router.delete("/member/leave/:conversationId", isAuth, memberController.leaveGroup);
 
-router.patch("/:conversationId/member/:newLeaderId", isAuth, memberController.updateLeader);
 
 router.get("/:conversationId/friend", isAuth, friendController.getListFriendByMemberId);
 

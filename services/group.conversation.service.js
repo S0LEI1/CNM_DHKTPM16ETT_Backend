@@ -1,3 +1,5 @@
+const NotFoundError = require("../exception/NotFoundErr");
+const MyError = require("../exception/MyError");
 const Conversation = require("../models/conversation");
 const ObjectId = require("mongoose").Types.ObjectId;
 const groupConversationServices = {
@@ -37,6 +39,53 @@ const groupConversationServices = {
         },
       },
     ]);
+  },
+  addDeputyLeader: async (conversationId, userId, deputyLeaderId) => {
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      members: { $in: [userId] },
+    });
+
+    if (!conversation) throw new NotFoundError("Conversation");
+    if (conversation.type === "SINGLE") throw new MyError("Only group");
+    if (conversation.leaderId.toString() != userId)
+      throw new MyError("Only leader can add deputy leader");
+    if (userId === deputyLeaderId) throw new MyError("You are already leader");
+    const isExist = await Conversation.findOne({
+      _id: conversationId,
+      members: { $in: [deputyLeaderId] },
+    });
+    if (!isExist) throw new MyError("Member not exist in group");
+    const isExistDeputyLeader = await Conversation.findOne({_id: conversationId, deputyLeaderId:{$in:[deputyLeaderId]}});
+    if(isExistDeputyLeader) throw new MyError("The selected member was the group's deputy leader");
+    const updateConversation = await Conversation.updateOne(
+      { _id: conversationId },
+      { $push: { deputyLeaderId: deputyLeaderId } },
+      { new: true }
+    );
+    return updateConversation;
+  },
+  deleteDeputyLeader: async (conversationId, userId, deputyLeaderId) => {
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      members: { $in: [userId] },
+    });
+
+    if (!conversation) throw new NotFoundError("Conversation");
+    if (conversation.type === "SINGLE") throw new MyError("Only group");
+    if (conversation.leaderId.toString() != userId)
+      throw new MyError("Only leader can add deputy leader");
+    const isExist = await Conversation.findOne({
+      _id: conversationId,
+      deputyLeaderId: { $in: [deputyLeaderId] },
+    });
+    if (!isExist) throw new MyError("Member not deputy leader");
+    const updateConversation = await Conversation.updateOne(
+      { _id: conversationId },
+      { $push: { deputyLeaderId: deputyLeaderId } },
+      { new: true }
+    );
+    return updateConversation;
   },
 };
 

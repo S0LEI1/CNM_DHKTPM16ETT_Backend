@@ -18,7 +18,8 @@ const { CREATE_CHAT, DELETE_CHAT } = require("../success");
 const { avatar } = require("../utils/validate");
 const memberServices = require("../services/member.services");
 const NotFoundError = require("../exception/NotFoundErr");
-const validate = require("../utils/validate")
+const validate = require("../utils/validate");
+const groupConversationServices = require("../services/group.conversation.service");
 exports.getListConversation = async (req, res, next) => {
   const userId = req.userId;
   try {
@@ -205,3 +206,21 @@ exports.updateGroupAvatar = async(req, res, next) =>{
   }
 }
 
+exports.addDeputyLeader = async(req, res, next) =>{
+  const userId = req.userId;
+  const conversationId = req.params.conversationId;
+  const deputyLeaderId = req.params.deputyLeaderId;
+  try {
+    const conversation = await groupConversationServices.addDeputyLeader(conversationId, userId, deputyLeaderId);
+    io.getIO().emit("add-deputy-leader", {
+      action: "update",
+      conversationId
+    });
+    res.status(200).json({message:"Add deputy leader success", conversation});
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  }
+}
