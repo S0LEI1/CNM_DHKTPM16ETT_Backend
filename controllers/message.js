@@ -30,9 +30,14 @@ exports.createTextMessage = async (req, res, next) => {
   //   const receiverId = req.params.receiverId;
   const content = req.body.content;
   const files = req.files;
+  
   try {
     const user = await User.findById(senderId);
-    const conversation = await Conversation.findById(conversationId);
+    const conversation = await Conversation.findOne(
+      {_id: conversationId,
+        members:{$in:[senderId]}
+      }
+    )
     if (!conversation) {
       return res.status(404).json({ message: "Conversation not found." });
     }
