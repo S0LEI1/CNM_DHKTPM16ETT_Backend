@@ -160,7 +160,6 @@ exports.shareMessage = async(req, res, next) =>{
       action: "create",
       conversationId
     });
-    res.status(200).json({message:"Delete success"})
     res.status(200).json({shareMessage});
   } catch (error) {
     if (!error.statusCode) {

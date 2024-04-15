@@ -4,6 +4,7 @@ const Conversation = require("../models/conversation");
 const Member = require("../models/member");
 const Message = require("../models/message");
 const messageValidate = require("../validate/messageValidate");
+const User = require("../models/user");
 const validate = require("../utils/validate");
 const messageServices = {
   getMessages: async (consId, userId) => {
@@ -73,6 +74,7 @@ const messageServices = {
   },
   shareMessage: async (conversationId, messageId, userId) => {
     const message = await Message.findById(messageId);
+    const user = await User.findById(userId);
     if (!message) throw new NotFoundError("Message");
     const conversation = await Conversation.find({
       _id: message.conversationId,
@@ -87,7 +89,9 @@ const messageServices = {
     const shareMessage = new Message({
       content: message.content,
       fileUrls: message.fileUrls,
-      userId: userId,
+      senderId: userId,
+      senderName: user.name,
+      senderAvatar: user.avatar,
       conversationId: conversationId,
       type: message.type,
     });
