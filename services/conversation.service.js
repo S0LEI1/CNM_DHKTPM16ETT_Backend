@@ -179,16 +179,18 @@ const conversationServices = {
       throw error;
     }
   },
-  updateLeader: async (conversationId, userId, newLeaderId) => {},
   deleteGroupConversation: async (conversationId, userId) => {
-    const conversation = await Conversation.findById(conversationId);
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      members: { $in: [userId] },
+    });
     if (!conversation) throw new Error("Conversation not found");
     if (conversation.type === "SINGLE" || conversation.leaderId != userId) {
       throw new Error("Not permission delete group");
     }
     await Member.deleteMany({ conversationId: conversationId });
     await Message.deleteMany({ conversationId: conversationId });
-    await Conversation.deleteOne({ conversationId: conversationId });
+    await Conversation.deleteOne({ _id: conversationId });
   },
   updateGroupName: async (conversationId, userId, name) => {
     const conversation = await Conversation.findOne({
@@ -226,11 +228,14 @@ const conversationServices = {
     await Conversation.updateOne({ _id: conversationId }, { avatar: imageUrl });
     return imageUrl;
   },
-  getConversationByIdAndUserId: async (conversationId, userId) =>{
-    const conversation = await Conversation.findOne({_id: conversationId, members:{$in:[userId]}});
-    if(!conversation) throw MyError("User not exist in group");
+  getConversationByIdAndUserId: async (conversationId, userId) => {
+    const conversation = await Conversation.findOne({
+      _id: conversationId,
+      members: { $in: [userId] },
+    });
+    if (!conversation) throw MyError("User not exist in group");
     return conversation;
-  }
+  },
 };
 
 module.exports = conversationServices;
