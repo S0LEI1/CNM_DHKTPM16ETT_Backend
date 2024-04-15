@@ -213,7 +213,7 @@ exports.addDeputyLeader = async(req, res, next) =>{
   try {
     const conversation = await groupConversationServices.addDeputyLeader(conversationId, userId, deputyLeaderId);
     io.getIO().emit("add-deputy-leader", {
-      action: "update",
+      action: "patch",
       conversationId
     });
     res.status(200).json({message:"Add deputy leader success", conversation});
@@ -223,4 +223,23 @@ exports.addDeputyLeader = async(req, res, next) =>{
     }
     next(error);
   }
+}
+
+exports.deleteDeputyLeader = async(req, res, next) =>{
+  const userId = req.userId;
+  const conversationId = req.params.conversationId;
+  const deputyLeaderId = req.params.deputyLeaderId;
+  try {
+    const conversation = await groupConversationServices.deleteDeputyLeader(conversationId, userId, deputyLeaderId);
+    io.getIO().emit("delete-deputy-leader", {
+      action: "patch",
+      conversationId
+    });
+    res.status(200).json({message:"Delete deputy leader success", conversation});
+  } catch (error) {
+    if (!error.statusCode) {
+      error.statusCode = 500;
+    }
+    next(error);
+  } 
 }

@@ -24,6 +24,8 @@ router.patch("/avatar/:conversationId", isAuth,upload.singleUploadMiddleware, co
 // leader & deputy leader
 router.patch("/:conversationId/member/:newLeaderId", isAuth, memberController.updateLeader);
 router.patch("/:conversationId/deputy/:deputyLeaderId", isAuth, conversationController.addDeputyLeader);
+router.patch("/:conversationId/delete/deputy/:deputyLeaderId", isAuth, conversationController.deleteDeputyLeader);
+
 // member
 
 router.get("/member/:conversationId", isAuth, memberController.getList);

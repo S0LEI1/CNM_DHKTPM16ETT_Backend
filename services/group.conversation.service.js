@@ -58,7 +58,7 @@ const groupConversationServices = {
     if (!isExist) throw new MyError("Member not exist in group");
     const isExistDeputyLeader = await Conversation.findOne({_id: conversationId, deputyLeaderId:{$in:[deputyLeaderId]}});
     if(isExistDeputyLeader) throw new MyError("The selected member was the group's deputy leader");
-    const updateConversation = await Conversation.updateOne(
+    const updateConversation = await Conversation.findOneAndUpdate(
       { _id: conversationId },
       { $push: { deputyLeaderId: deputyLeaderId } },
       { new: true }
@@ -80,9 +80,9 @@ const groupConversationServices = {
       deputyLeaderId: { $in: [deputyLeaderId] },
     });
     if (!isExist) throw new MyError("Member not deputy leader");
-    const updateConversation = await Conversation.updateOne(
+    const updateConversation = await Conversation.findOneAndUpdate(
       { _id: conversationId },
-      { $push: { deputyLeaderId: deputyLeaderId } },
+      { $pull: { deputyLeaderId: deputyLeaderId } },
       { new: true }
     );
     return updateConversation;
