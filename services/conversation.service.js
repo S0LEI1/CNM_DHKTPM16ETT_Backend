@@ -170,7 +170,6 @@ const conversationServices = {
         );
       }
       const messagesData = await messageServices.getMessages(consId, userId);
-      console.log(messagesData);
       let messages = [];
       for (let index = 0; index < messagesData.length; index++) {
         messages.push(messageUtils.convertMessage(messagesData[index]));

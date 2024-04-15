@@ -118,15 +118,17 @@ exports.addFriend = async (req, res, next) => {
       action: "create",
       addFriend: {
         ...addFriend._doc,
-        creator: { _id: userId, name: user.name },
+        creator: { _id: userId, name: user.name, avatar: user.avatar },
       },
+      friendId
     });
     io.getIO().emit("addFriend", {
       action: "create",
       addFriend: {
         ...addFriend._doc,
-        creator: { _id: friendId, name: friend.name },
+        creator: { _id: friendId, name: friend.name, avatar: user.avatar },
       },
+      userId
     });
     res.status(200).json({
       message: "Create Add Friend Request Success",
