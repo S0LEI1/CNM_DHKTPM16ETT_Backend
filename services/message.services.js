@@ -86,6 +86,7 @@ const messageServices = {
     if (!shareConversation) throw new NotFoundError("Conversation share");
     const shareMessage = new Message({
       content: message.content,
+      fileUrls: message.fileUrls,
       userId: userId,
       conversationId: conversationId,
       type: message.type,
