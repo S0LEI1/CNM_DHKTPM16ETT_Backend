@@ -16,6 +16,7 @@ const validate = require("../utils/validate");
 const { uploadFile } = require("../services/upload_file");
 
 const conversationServices = require("../services/conversation.service");
+const NotFoundError = require("../exception/NotFoundErr");
 const type = {
   USERS: "users",
   CONVERSATIONS: "conversations",
@@ -45,11 +46,12 @@ exports.createMessage = async (req, res, next) => {
     // await conversation.save();
     io.getIO().emit("message", {
       action: "create",
-      message: {
-        ...message._doc,
-        creator: { _id: senderId, name: user.name },
-        conversationId,
-      },
+      // message: {
+      //   ...message._doc,
+      //   creator: { _id: senderId, name: user.name },
+      //   conversationId,
+      // },
+      message: message,
     });
     res.status(201).json({
       message: "Create message success!",
@@ -68,45 +70,15 @@ exports.createFileMessage = async (req, res, next) => {
   const conversationId = req.params.conversationId;
   const senderId = req.userId;
   const files = req.files;
+  console.log(files);
   const user = await User.findById(senderId);
-  
   try {
-    const conversation = await Conversation.findById(conversationId);
-    if (!conversation) {
-      return res.status(404).json({ message: "Conversation not found." });
-    }
-    if (!files) {
-      return res.status(500).json({ message: "No file" });
-    }
-    const folderName = user._id;
-    const fileUrls = [];
-    for (let index = 0; index < files.length; index++) {
-      const error = validate.file(files[index]);
-      if (error) {
-        return res.status(500).json({ message: "Validate fail", error: error });
-      }
-      const url = await messageServices.uploadFile(folderName, files[index]);
-      fileUrls.push(url);
-    }
-    const message = new Message({
-      senderId: senderId,
-      senderName: user.name,
-      senderAvatar: user.avatar,
-      //   view: view,
-      fileUrls: fileUrls,
-      type: "FILE",
-      conversationId: conversationId,
-    });
-    await message.save();
-    await conversationServices.updateLastMessage(conversation._id, message);
+    await conversationServices.getConversationByIdAndUserId(conversationId, senderId);
+    const message = await messageServices.createFileMessage(conversationId, user,"", files);
+
     io.getIO().emit("message", {
       action: "create",
-      message: {
-        ...message._doc,
-        creator: { _id: senderId, name: user.senderName },
-        conversationId,
-        // message
-      },
+      message: message,
     });
     res.status(201).json({
       message: "Create message success!",
@@ -167,4 +139,14 @@ exports.shareMessage = async(req, res, next) =>{
     }
     next(error);
   }
+}
+
+exports.getMessageByConversationId = async(req, res, next) =>{
+  const userId = req.userId;
+  const conversationId = req.params.conversationId;
+  const messages = await messageServices.getMessages(conversationId, userId);
+  if(!messages){
+    throw new NotFoundError("List message not found")
+  }
+  res.status(200).json({messages});
 }

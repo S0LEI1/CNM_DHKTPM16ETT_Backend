@@ -8,12 +8,11 @@ const User = require("../models/user");
 const memberValidate = require("../validate/memberValidate");
 const ObjectId = require("mongoose").Types.ObjectId;
 const friendServices = {
-  getListFriendReq: async (_id) => {
-    const user = await User.findById(_id);
-    console.log(user);
+  getListFriendReq: async (userId) => {
+    const user = await User.findById(userId);
     const addFriendReqs = await AddFriend.aggregate([
-      { $match: { receiverId: new Object(_id) } },
-      { $project: { _id: 1, senderId: 1, content: 1 } },
+      { $match: { receiverId: new ObjectId(userId) } },
+      { $project: { _id: 1, senderId: 1, content: 1, avatar: 1 } },
       {
         $lookup: {
           from: "users",
@@ -36,7 +35,6 @@ const friendServices = {
         },
       },
     ]);
-
     return addFriendReqs;
   },
   getListFriends: async (userId) => {

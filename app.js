@@ -4,6 +4,8 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const multer = require("multer");
+const passport = require("passport");
+const LocalStrategy = require("passport-local").Strategy;
 
 const authRoutes = require("./routes/auth");
 const friendRoutes = require("./routes/friend");
@@ -11,7 +13,6 @@ const messageRoutes = require("./routes/message");
 const conversationRoutes = require("./routes/conversation");
 
 const app = express();
-
 
 
 app.use(bodyParser.json()); // application/json
@@ -31,7 +32,8 @@ app.use((req, res, next) => {
   next();
 });
 
-
+let cors = require("cors");
+app.use(cors());
 
 app.use("/auth", authRoutes);
 app.use("/friend", friendRoutes);

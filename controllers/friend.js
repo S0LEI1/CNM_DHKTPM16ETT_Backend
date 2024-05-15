@@ -11,13 +11,14 @@ exports.getListFriends = async (req, res, next) => {
   const userId = req.userId;
   try {
     const friendIds = await friendServices.getListFriends(userId);
-    const friends = await User.find({_id: {$in: friendIds}},{_id:1, name:1, avatar:1})
+    const friends = await User.find(
+      { _id: { $in: friendIds } },
+      { _id: 1, name: 1, avatar: 1 }
+    );
     if (friends.length <= 0) {
       return res.status(202).json({ message: "users don't have friends!" });
     }
-    res
-      .status(201)
-      .json({ message: "List friends !", friends, userId });
+    res.status(201).json({ message: "List friends !", friends, userId });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode === 500;
@@ -102,9 +103,9 @@ exports.addFriend = async (req, res, next) => {
     if (addFriendReq) {
       return res.status(500).json({ message: "Friend request already exists" });
     }
-    const isFriend = await Friends.findOne({userIds:[user._id, friend._id]});
-    if(isFriend){
-      return res.status(500).json({message:"were friends"});
+    const isFriend = await Friends.findOne({ userIds: [user._id, friend._id] });
+    if (isFriend) {
+      return res.status(500).json({ message: "were friends" });
     }
     const addFriend = new AddFriend({
       senderId: userId,
@@ -120,7 +121,7 @@ exports.addFriend = async (req, res, next) => {
         ...addFriend._doc,
         creator: { _id: userId, name: user.name, avatar: user.avatar },
       },
-      friendId
+      friendId,
     });
     io.getIO().emit("addFriend", {
       action: "create",
@@ -165,25 +166,19 @@ exports.updateStatus = async (req, res, next) => {
       await friend.save();
     }
     const conversation = await conversationServices.createSingleConversation(
-      senderId,
-      receiverId
-    );
-    io.getIO().emit("create-conversation", {
+        senderId,
+        receiverId
+      );
+    io.getIO().emit("create-single-conversation", {
       action: "create",
-      conversation: {
-        ...conversation._doc,
-        creator: { _id: senderId },
-      },
+      conversation: conversation
     });
-    io.getIO().emit("create-conversation", {
+    io.getIO().emit("create-single-conversation", {
       action: "create",
-      conversation: {
-        ...conversation._doc,
-        creator: { _id: receiverId },
-      },
+      conversation: conversation
     });
     await AddFriend.findByIdAndDelete(addFriendReqId);
-    res.status(200).json({ message: "Add friend success." });
+    res.status(200).json({ message: "Add friend success.", conversation });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode === 500;
@@ -196,12 +191,14 @@ exports.getListAddFriendReqs = async (req, res, next) => {
   const userId = req.userId;
   try {
     const addFriendReqs = await friendServices.getListFriendReq(userId);
-    
+
     if (!addFriendReqs) {
       return res.status(404).json({ message: "Could not find friend request" });
     }
     if (addFriendReqs.length <= 0) {
-      return res.status(200).json({ message: "No friend request now ", addFriendReqs });
+      return res
+        .status(200)
+        .json({ message: "No friend request now ", addFriendReqs });
     }
     res.status(200).json({
       message: "Get Add Friend Request Success",
@@ -215,16 +212,19 @@ exports.getListAddFriendReqs = async (req, res, next) => {
     next(error);
   }
 };
-exports.getListFriendByMemberId = async(req, res, next) =>{
+exports.getListFriendByMemberId = async (req, res, next) => {
   const userId = req.userId;
   const conversationId = req.params.conversationId;
   try {
-    const friends = await friendServices.getListFriendByMemberId(conversationId, userId);
-    res.status(200).json({friends});
+    const friends = await friendServices.getListFriendByMemberId(
+      conversationId,
+      userId
+    );
+    res.status(200).json({ friends });
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
     }
     next(error);
   }
-}
+};

@@ -12,6 +12,7 @@ const singleConversationServices = require("./single.conversation.service");
 const { uploadFileToS3 } = require("./upload_file");
 const validate = require("../utils/validate");
 const s3Services = require("./s3service");
+const { CON_NOT_FOUND_ERR } = require("../errors");
 const type = {
   USERS: "users",
   CONVERSATIONS: "conversations",
@@ -78,7 +79,6 @@ const conversationServices = {
       const conversation = new Conversation({
         members: [user1, user2],
         type: "SINGLE",
-        // chatName: user2.name,
       });
       await conversation.save();
       const { _id } = conversation;
@@ -236,6 +236,12 @@ const conversationServices = {
     if (!conversation) throw MyError("User not exist in group");
     return conversation;
   },
+  getConversationBy2UserId: async (userId1, userId2) =>{
+    const conversation = await Conversation.findOne({
+      members: {$in: [userId1, userId2]}
+    })
+    return conversation;
+  }
 };
 
 module.exports = conversationServices;

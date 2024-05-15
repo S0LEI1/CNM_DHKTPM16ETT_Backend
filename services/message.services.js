@@ -7,7 +7,11 @@ const messageValidate = require("../validate/messageValidate");
 const User = require("../models/user");
 const validate = require("../utils/validate");
 const messageServices = {
-  getMessages: async (consId, userId) => {
+    getMessages: async (consId, userId) => {
+      // const user = await Conversation.findOne({_id: consId, members:{$in: [userId]}})
+      // if(!user){
+      //   throw new NotFoundError("User not in conversation");
+      // }
     const messages = await Message.find(
       {
         conversationId: consId,
@@ -28,6 +32,9 @@ const messageServices = {
         deletedUserIds: 1,
       }
     ).sort({ createdAt: 1 });
+    if(!messages){
+      throw new NotFoundError("Not message now")
+    }
     return messages;
   },
 

@@ -5,7 +5,7 @@ const isAuth = require("../middleware/is-auth");
 const messageController = require("../controllers/message");
 const upload = require("../middleware/upload");
 
-
+router.get("/list/:conversationId", isAuth, messageController.getMessageByConversationId);
 router.post('/text/:conversationId',isAuth,upload.multipleUploadMiddleware, messageController.createMessage);
 router.post("/file/:conversationId", isAuth,upload.multipleUploadMiddleware, messageController.createFileMessage);
 router.delete("/delete/:messageId", isAuth, messageController.deleteMessage);

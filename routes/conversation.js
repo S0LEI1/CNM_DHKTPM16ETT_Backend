@@ -7,11 +7,13 @@ const conversationController = require("../controllers/conversation");
 const memberController = require("../controllers/member");
 const friendController = require("../controllers/friend");
 const upload = require("../middleware/upload");
+const conversationServices = require("../services/conversation.service");
 // /conversation/
 router.get("/", isAuth, conversationController.getListConversation);
 // /conversation/id
 router.get('/:conversationId',isAuth, conversationController.getConversation);
-
+router.get("/con/:conversationId", isAuth, conversationController.getConversationById);
+// router.get("/:userId2/byId", isAuth, conversationController.getConversationBy2UserId);
 //create
 router.post("/single/:receiverId", isAuth, conversationController.createSingleConversation);
 router.post("/group", isAuth, upload.singleUploadMiddleware, conversationController.createGroupConversation);

@@ -243,3 +243,20 @@ exports.deleteDeputyLeader = async(req, res, next) =>{
     next(error);
   } 
 }
+
+exports.getConversationById = async(req, res, next) =>{
+  const userId = req.userId;
+  const conversationId = req.params.conversationId;
+  const conversation = await conversationServices.getConversationByIdAndUserId(conversationId, userId);
+  res.status(200).json({conversation});
+}
+
+// exports.getConversationBy2UserId = async (req, res,next) =>{
+//   const userId1 = req.userId;
+//   const userId2 = req.params.userId2;
+//   const conversation = await conversationServices.getConversationBy2UserId(userId1, userId2);
+//   if(!conversation){
+//     res.status(404).json({CON_NOT_FOUND_ERR})
+//   }
+//   res.status(200).json({conversation});
+// }
