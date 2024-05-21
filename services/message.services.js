@@ -30,6 +30,7 @@ const messageServices = {
         updatedAt: 1,
         isDeleted: 1,
         deletedUserIds: 1,
+        type: 1
       }
     ).sort({ createdAt: 1 });
     if(!messages){

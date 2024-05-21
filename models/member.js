@@ -2,30 +2,30 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const memberSchema = new Schema({
-    userId: {
-        type: Schema.Types.ObjectId,
-        ref:"User",
-        require: true,
-    },
-    conversationId:{
-        type: Schema.Types.ObjectId,
-        ref:"Conversation",
-        require:true,
-    }
-})
+  userId: {
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    require: true,
+  },
+  conversationId: {
+    type: Schema.Types.ObjectId,
+    ref: "Conversation",
+    require: true,
+  },
+});
 
 memberSchema.statics.getByConversationIdAndUserId = async (
-    conversationId,
-    userId,
+  conversationId,
+  userId
 ) => {
-    const member = await Member.findOne({
-        conversationId,
-        userId,
-    });
+  const member = await Member.findOne({
+    conversationId: conversationId,
+    userId: userId,
+  });
 
-    if (!member) throw  new Error("Conversation not found");
+  if (!member) throw new Error("Conversation not found");
 
-    return member;
+  return member;
 };
 
 const Member = mongoose.model("member", memberSchema);

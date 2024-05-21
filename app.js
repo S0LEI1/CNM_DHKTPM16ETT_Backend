@@ -14,9 +14,8 @@ const conversationRoutes = require("./routes/conversation");
 
 const app = express();
 
-
 app.use(bodyParser.json()); // application/json
-app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.urlencoded({ extended: true }));
 // app.use(
 //   multer({ storage: fileStorage, fileFilter: fileFilter }).single("image")
 // );
@@ -37,8 +36,8 @@ app.use(cors());
 
 app.use("/auth", authRoutes);
 app.use("/friend", friendRoutes);
-app.use("/message",messageRoutes);
-app.use("/conversation", conversationRoutes)
+app.use("/message", messageRoutes);
+app.use("/conversation", conversationRoutes);
 app.use((error, req, res, next) => {
   console.log(error);
   const status = error.statusCode || 500;
@@ -47,7 +46,7 @@ app.use((error, req, res, next) => {
   res.status(status).json({ message: message, data: data });
 });
 
-  mongoose
+mongoose
   .connect(
     "mongodb+srv://soleil:01636878201@cluster0.4x48u.mongodb.net/chatapp2?retryWrites=true&w=majority&appName=Cluster0"
   )
@@ -55,7 +54,33 @@ app.use((error, req, res, next) => {
     const server = app.listen(8000);
     const io = require("./socket").init(server);
     io.on("connection", (socket) => {
-      console.log("Client connected");
+      socket.on("disconnect", () => {
+        const userId = socket.userId;
+      });
+
+      socket.on("join", (userId) => {
+        socket.userId = userId;
+        socket.join(userId);
+      });
+
+      socket.on("join-conversations", (conversationIds) => {
+        console.log("join conversations" + conversationIds);
+        conversationIds.forEach((id) => socket.join(id));
+      });
+
+      socket.on("join-conversation", (conversationId) => {
+        console.log("join conversation" + conversationId);
+        socket.join(conversationId);
+      });
+
+      socket.on("leave-conversation", (conversationId) => {
+        console.log("leave group");
+        socket.leave(conversationId);
+      });
+      // socket.on("send-message", (data) => {
+      //   console.log("data to client", data);
+      //   io.emit("received-message", data);
+      // })
     });
   })
   .catch((err) => console.log(err));

@@ -42,17 +42,12 @@ exports.createMessage = async (req, res, next) => {
       message= await messageServices.createTextMessage(conversationId, user, content);
     }
     await message.save();
-    // conversation.lastMessages = message._id;
-    // await conversation.save();
     io.getIO().emit("message", {
       action: "create",
-      // message: {
-      //   ...message._doc,
-      //   creator: { _id: senderId, name: user.name },
-      //   conversationId,
-      // },
       message: message,
+      conversationId: conversationId
     });
+    console.log("data in io", io);
     res.status(201).json({
       message: "Create message success!",
       message: message,

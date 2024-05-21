@@ -233,7 +233,7 @@ const conversationServices = {
       _id: conversationId,
       members: { $in: [userId] },
     });
-    if (!conversation) throw MyError("User not exist in group");
+    if (!conversation) throw new MyError("User not exist in group");
     return conversation;
   },
   getConversationBy2UserId: async (userId1, userId2) =>{
