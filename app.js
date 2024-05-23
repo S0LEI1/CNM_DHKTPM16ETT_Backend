@@ -53,6 +53,7 @@ mongoose
   .then((result) => {
     const server = app.listen(8000);
     const io = require("./socket").init(server);
+    let room;
     io.on("connection", (socket) => {
       socket.on("disconnect", () => {
         const userId = socket.userId;
@@ -70,17 +71,21 @@ mongoose
 
       socket.on("join-conversation", (conversationId) => {
         console.log("join conversation" + conversationId);
-        socket.join(conversationId);
+        socket.join("room-"+conversationId);
+        room="room-"+ conversationId;
       });
+      io.sockets.in(room).emit('connectToRoom', "You are in room no. "+room);
 
       socket.on("leave-conversation", (conversationId) => {
         console.log("leave group");
         socket.leave(conversationId);
       });
-      // socket.on("send-message", (data) => {
-      //   console.log("data to client", data);
-      //   io.emit("received-message", data);
-      // })
+      socket.on("send-message", ({conversationId, message}) => {
+        console.log("data to client", message);
+        console.log("data to client", conversationId);
+        io.to("room-"+conversationId).emit("received-message", message);
+        // io.sockets.in("room-"+conversationId).emit("received-message", message)
+      })
     });
   })
   .catch((err) => console.log(err));

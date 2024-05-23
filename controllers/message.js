@@ -74,6 +74,7 @@ exports.createFileMessage = async (req, res, next) => {
     io.getIO().emit("message", {
       action: "create",
       message: message,
+      conversationId: conversationId
     });
     res.status(201).json({
       message: "Create message success!",
@@ -93,7 +94,8 @@ exports.deleteMessage = async (req, res, next) => {
      const {deleteMessage, conversationId} = await messageServices.deleteMessageById(userId, messageId);
       io.getIO().emit("message", {
         action: "delete",
-        conversationId
+        conversationId,
+        message: deleteMessage
       });
       res.status(200).json({message:"Delete success", deleteMessage})
   } catch (error) {

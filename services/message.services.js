@@ -56,6 +56,7 @@ const messageServices = {
   deleteOnlyByMe: async (userId, messageId) => {
     const message = await Message.findById(messageId);
     const { isDeleted, deletedUserIds } = message;
+    if(!message) throw new NotFoundError("Message");
     if (isDeleted) return;
     const index = deletedUserIds.findIndex((id) => id === userId);
     if (index != -1) return;
