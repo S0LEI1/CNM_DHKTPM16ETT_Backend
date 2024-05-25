@@ -149,7 +149,7 @@ exports.deleteAllMessage = async(req, res, next) =>{
   const conversationId = req.params.conversationId;
   try {
     await messageServices.deleteAllMessage(conversationId, userId);
-    res.status(200).json("Delete all message success")
+    res.status(200).json("Delete all message success");
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;
@@ -163,7 +163,11 @@ exports.deleteGroupConversation = async(req, res, next) =>{
   const conversationId = req.params.conversationId;
   try {
     await conversationServices.deleteGroupConversation(conversationId, userId);
-    res.status(200).json("Delete conversation success")
+    io.getIO().emit("delete-group", {
+      action: "delete",
+      conversationId: conversationId
+    });
+    res.status(200).json("Delete conversation success");
   } catch (error) {
     if (!error.statusCode) {
       error.statusCode = 500;

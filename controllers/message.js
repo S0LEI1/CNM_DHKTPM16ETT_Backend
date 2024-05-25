@@ -147,3 +147,12 @@ exports.getMessageByConversationId = async(req, res, next) =>{
   }
   res.status(200).json({messages});
 }
+
+exports.createNofifyMessage = async(req, res, next) =>{
+  const userId = req.userId;
+  const conversationId = req.params.conversationId;
+  const content = req.body.content;
+  const user = await User.findById(userId);
+  const message = await messageServices.createNotifyMessage(conversationId, user, content);
+  res.status(200).json({message});
+}

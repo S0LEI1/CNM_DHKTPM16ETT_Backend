@@ -22,7 +22,7 @@ const messageSchema = new Schema(
     },
     type: {
       type: String,
-      enum: ["TEXT", "FILE", "LINK", "TEXTANDFILE", "TEXTANDLINK"],
+      enum: ["TEXT", "FILE", "LINK", "TEXTANDFILE", "TEXTANDLINK","NOTIFY"],
       default: "TEXT",
     },
     deletedUserIds: {

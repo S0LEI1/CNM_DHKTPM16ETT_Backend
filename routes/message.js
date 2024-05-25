@@ -11,4 +11,5 @@ router.post("/file/:conversationId", isAuth,upload.multipleUploadMiddleware, mes
 router.delete("/delete/:messageId", isAuth, messageController.deleteMessage);
 router.delete("/delete/only/:messageId", isAuth, messageController.deleteOnlyByMe);
 router.post("/:messageId/share/:conversationId", isAuth, messageController.shareMessage);
+router.post("/notify/:conversationId", isAuth, messageController.createNofifyMessage);
 module.exports = router;

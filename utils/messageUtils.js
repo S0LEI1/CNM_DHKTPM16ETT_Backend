@@ -6,7 +6,7 @@ const messageUtils = {
             return {
                 messageId,
                 isDeleted,
-                user: message.senderId,
+                senderId: message.senderId,
                 createAt: message.createAt
             }
         }

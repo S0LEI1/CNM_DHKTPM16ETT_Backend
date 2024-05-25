@@ -153,5 +153,23 @@ const messageServices = {
     );
     return message;
   },
+  createNotifyMessage: async(conversationId, user, content) =>{
+    const errors = validate.content(content);
+    if (errors) throw new MyError(errors);
+    const message = new Message({
+      senderId: user._id,
+      senderName: user.name,
+      senderAvatar: user.avatar,
+      content: content,
+      conversationId: conversationId,
+      type: "NOTIFY"
+    });
+    await message.save();
+    await Conversation.updateOne(
+      { _id: conversationId },
+      { lastMessages: message._id }
+    );
+    return message;
+  }
 };
 module.exports = messageServices;
